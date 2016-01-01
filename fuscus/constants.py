@@ -28,6 +28,8 @@ import rotaryEncoder
 import pcd8544
 import lcd
 import door
+import Menu
+import piLink
 
 # Port for TCP/IP control FIXME: not implemented yet
 port = 25518
@@ -108,3 +110,7 @@ LCD = lcd.lcd(lines = 6, chars = 20, hardware = LCD_hardware)
 
 tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
 							cooler = cooler, heater = heater, door = DOOR)
+
+piLink = piLink.piLink(tempControl=tempControl)
+
+menu = Menu.Menu(encoder=encoder, tempControl=tempControl, piLink=piLink)

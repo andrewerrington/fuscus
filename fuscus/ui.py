@@ -89,4 +89,9 @@ def update():
 	
 def ticks():
 	# Do UI housekeeping
-	pass
+	if(encoder.pushed):
+		#rotaryEncoder.resetPushed();
+		while encoder.pushed:	# Wait for button to be released
+			pass
+		menu.pickSettingToChange()
+	

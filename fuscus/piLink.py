@@ -42,7 +42,7 @@ STR_FMT_SET_TO = " set to %s "
 
 class piLink:
 
-	def __init__(self):
+	def __init__(self, tempControl):
 		# Set up a pty to accept serial input as if we are an Arduino
 		# FIXME: Make this a socket interface.  The main brewpi code can send to a socket.
 		# use port 25518 (beer 2 5 5 18)
@@ -54,6 +54,8 @@ class piLink:
 		self.f = os.fdopen(master, 'wb+', buffering=0)
 		self.portName = port_name
 		self.buf = ''
+		
+		self.tempControl = tempControl
 
 
 	def updateBuffer(self):
@@ -95,28 +97,28 @@ class piLink:
 
 			elif inByte == 'C':	# Set default constants
 				print("Set default constants request.")
-				tempControl.loadDefaultConstants()
+				self.tempControl.loadDefaultConstants()
 				#display.printStationaryText()	# FIXME reprint stationary text to update to right degree unit
-				self.sendControlConstants(tempControl.cc)	# update script with new settings
+				self.sendControlConstants(self.tempControl.cc)	# update script with new settings
 				logging.info("INFO_DEFAULT_CONSTANTS_LOADED")
 
 			elif inByte == 'S':	# Set default settings
 				print("Set default settings request.")
-				tempControl.loadDefaultSettings()
-				self.sendControlSettings(tempControl.cs)	# update script with new settings
+				self.tempControl.loadDefaultSettings()
+				self.sendControlSettings(self.tempControl.cs)	# update script with new settings
 				logging.info("INFO_DEFAULT_SETTINGS_LOADED")
 
 			elif inByte == 's':	# Control settings requested
 				print("Control settings request.")
-				self.sendControlSettings(tempControl.cs)
+				self.sendControlSettings(self.tempControl.cs)
 
 			elif inByte == 'c':	# Control constants requested
 				print("Control constants request.")
-				self.sendControlConstants(tempControl.cc)
+				self.sendControlConstants(self.tempControl.cc)
 
 			elif inByte == 'v':	# Control variables requested
 				print("Control variables request.")
-				self.sendControlVariables(tempControl.cv)
+				self.sendControlVariables(self.tempControl.cv)
 
 			elif inByte == 'n':	# Version request
 				# PSTR(VERSION_STRING), // v:
@@ -194,33 +196,33 @@ class piLink:
 		#define JSON_TIME		"t"
 		#define JSON_ROOM_TEMP  "rt"
 
-		t = tempControl.getBeerTemp()
+		t = self.tempControl.getBeerTemp()
 		if t:
 			temps['bt'] = t
 
-		t = tempControl.getBeerSetting()
+		t = self.tempControl.getBeerSetting()
 		if t:
 			temps['bs'] = t
 
 		if beerAnnotation:
 			temps['ba'] = beerAnnotation
 
-		t = tempControl.getFridgeTemp()
+		t = self.tempControl.getFridgeTemp()
 		if t:
 			temps['ft'] = t
 
-		t = tempControl.getFridgeSetting()
+		t = self.tempControl.getFridgeSetting()
 		if t:
 			temps['fs'] = t
 
 		if fridgeAnnotation:
 			temps['fa'] = fridgeAnnotation
 
-		t = tempControl.getRoomTemp()
+		t = self.tempControl.getRoomTemp()
 		if t:
 			temps['rt'] = t
 
-		temps['s'] = tempControl.getState()
+		temps['s'] = self.tempControl.getState()
 
 		self.f.write(bytes('T:'+json.dumps(temps)+'\r\n','UTF-8'))
 
@@ -341,10 +343,10 @@ class piLink:
 		# JSON_CONVERT(JSONKEY_coolEstimator, &tempControl.cs.coolEstimator, setStringToFixedPoint),
 
 		if JSONKEY_heatEstimator in newSettings:
-			tempControl.cs.heatEstimator = float(newSettings[JSONKEY_heatEstimator])
+			self.tempControl.cs.heatEstimator = float(newSettings[JSONKEY_heatEstimator])
 
 		if JSONKEY_coolEstimator in newSettings:
-			tempControl.cs.coolEstimator = float(newSettings[JSONKEY_coolEstimator])
+			self.tempControl.cs.coolEstimator = float(newSettings[JSONKEY_coolEstimator])
 
 		#JSON_CONVERT(JSONKEY_tempFormat, NULL, setTempFormat),
 
@@ -356,23 +358,23 @@ class piLink:
 		# JSON_CONVERT(JSONKEY_pidMax, &tempControl.cc.pidMax, setStringToTempDiff),
 
 		if JSONKEY_tempSettingMin in newSettings:
-			tempControl.cc.tempSettingMin = float(newSettings[JSONKEY_tempSettingMin])
+			self.tempControl.cc.tempSettingMin = float(newSettings[JSONKEY_tempSettingMin])
 
 		if JSONKEY_tempSettingMax in newSettings:
-			tempControl.cc.tempSettingMax = float(newSettings[JSONKEY_tempSettingMax])
+			self.tempControl.cc.tempSettingMax = float(newSettings[JSONKEY_tempSettingMax])
 
 		# JSON_CONVERT(JSONKEY_Kp, &tempControl.cc.Kp, setStringToFixedPoint),
 		# JSON_CONVERT(JSONKEY_Ki, &tempControl.cc.Ki, setStringToFixedPoint),
 		# JSON_CONVERT(JSONKEY_Kd, &tempControl.cc.Kd, setStringToFixedPoint),
 
 		if JSONKEY_Kp in newSettings:
-			tempControl.cc.Kp = float(newSettings[JSONKEY_Kp])
+			self.tempControl.cc.Kp = float(newSettings[JSONKEY_Kp])
 
 		if JSONKEY_Ki in newSettings:
-			tempControl.cc.Ki = float(newSettings[JSONKEY_Ki])
+			self.tempControl.cc.Ki = float(newSettings[JSONKEY_Ki])
 			
 		if JSONKEY_Kd in newSettings:
-			tempControl.cc.Kd = float(newSettings[JSONKEY_Kd])
+			self.tempControl.cc.Kd = float(newSettings[JSONKEY_Kd])
 			
 		# JSON_CONVERT(JSONKEY_iMaxError, &tempControl.cc.iMaxError, setStringToTempDiff),
 		# JSON_CONVERT(JSONKEY_idleRangeHigh, &tempControl.cc.idleRangeHigh, setStringToTempDiff),
@@ -387,39 +389,39 @@ class piLink:
 		# JSON_CONVERT(JSONKEY_rotaryHalfSteps, &tempControl.cc.rotaryHalfSteps, setBool),
 
 		if JSONKEY_iMaxError in newSettings:
-			tempControl.cc.iMaxError = float(newSettings[JSONKEY_iMaxError])
+			self.tempControl.cc.iMaxError = float(newSettings[JSONKEY_iMaxError])
 
 		if JSONKEY_idleRangeHigh in newSettings:
-			tempControl.cc.idleRangeHigh = float(newSettings[JSONKEY_idleRangeHigh])
+			self.tempControl.cc.idleRangeHigh = float(newSettings[JSONKEY_idleRangeHigh])
 			
 		if JSONKEY_idleRangeLow in newSettings:
-			tempControl.cc.idleRangeLow = float(newSettings[JSONKEY_idleRangeLow])
+			self.tempControl.cc.idleRangeLow = float(newSettings[JSONKEY_idleRangeLow])
 
 		if JSONKEY_heatingTargetUpper in newSettings:
-			tempControl.cc.heatingTargetUpper = float(newSettings[JSONKEY_heatingTargetUpper])
+			self.tempControl.cc.heatingTargetUpper = float(newSettings[JSONKEY_heatingTargetUpper])
 			
 		if JSONKEY_heatingTargetLower in newSettings:
-			tempControl.cc.heatingTargetLower = float(newSettings[JSONKEY_heatingTargetLower])
+			self.tempControl.cc.heatingTargetLower = float(newSettings[JSONKEY_heatingTargetLower])
 			
 		if JSONKEY_coolingTargetUpper in newSettings:
-			tempControl.cc.coolingTargetUpper = float(newSettings[JSONKEY_coolingTargetUpper])
+			self.tempControl.cc.coolingTargetUpper = float(newSettings[JSONKEY_coolingTargetUpper])
 			
 		if JSONKEY_coolingTargetLower in newSettings:
-			tempControl.cc.coolingTargetLower = float(newSettings[JSONKEY_coolingTargetLower])
+			self.tempControl.cc.coolingTargetLower = float(newSettings[JSONKEY_coolingTargetLower])
 			
 		if JSONKEY_maxHeatTimeForEstimate in newSettings:
-			tempControl.cc.maxHeatTimeForEstimate = int(newSettings[JSONKEY_maxHeatTimeForEstimate])
+			self.tempControl.cc.maxHeatTimeForEstimate = int(newSettings[JSONKEY_maxHeatTimeForEstimate])
 			
 		if JSONKEY_maxCoolTimeForEstimate in newSettings:
-			tempControl.cc.maxCoolTimeForEstimate = int(newSettings[JSONKEY_maxCoolTimeForEstimate])
+			self.tempControl.cc.maxCoolTimeForEstimate = int(newSettings[JSONKEY_maxCoolTimeForEstimate])
 
 		if JSONKEY_lightAsHeater in newSettings:
-			tempControl.cc.lightAsHeater = int(newSettings[JSONKEY_lightAsHeater])
+			self.tempControl.cc.lightAsHeater = int(newSettings[JSONKEY_lightAsHeater])
 
 		if JSONKEY_rotaryHalfSteps in newSettings:
-			tempControl.cc.rotaryHalfSteps = int(newSettings[JSONKEY_rotaryHalfSteps])
+			self.tempControl.cc.rotaryHalfSteps = int(newSettings[JSONKEY_rotaryHalfSteps])
 			
-		print(vars(tempControl.cc))
+		print(vars(self.tempControl.cc))
 
 		# FIXME Still to do	
 		# JSON_CONVERT(JSONKEY_fridgeFastFilter, MAKE_FILTER_SETTING_TARGET(FAST, FRIDGE), applyFilterSetting),
@@ -505,14 +507,14 @@ class piLink:
 
 	def setMode(self, val):
 		mode = val[0]
-		tempControl.setMode(mode)
+		self.tempControl.setMode(mode)
 		self.printFridgeAnnotation(STR_MODE + (STR_FMT_SET_TO%val) + STR_WEB_INTERFACE)
 
 		
 	def setBeerSetting(self, newTemp):
 		source = None
-		if(tempControl.cs.mode == 'p'):
-			if(tempControl.cs.beerSetting is not None and (abs(newTemp - tempControl.cs.beerSetting) > 0.2)):	# this excludes gradual updates under 0.2 degrees
+		if (self.tempControl.cs.mode == 'p'):
+			if(self.tempControl.cs.beerSetting is not None and (abs(newTemp - self.tempControl.cs.beerSetting) > 0.2)):	# this excludes gradual updates under 0.2 degrees
 				source = STR_TEMPERATURE_PROFILE
 		else:
 			source = STR_WEB_INTERFACE
@@ -520,14 +522,14 @@ class piLink:
 		if (source):
 			self.printBeerAnnotation(STR_BEER_TEMP + (STR_FMT_SET_TO%newTemp) + source)
 
-		tempControl.setBeerTemp(newTemp)
+		self.tempControl.setBeerTemp(newTemp)
 
 		
 	def setFridgeSetting(self, newTemp):
-		if(tempControl.cs.mode == 'f'):
+		if (self.tempControl.cs.mode == 'f'):
 			self.printFridgeAnnotation(STR_FRIDGE_TEMP + (STR_FMT_SET_TO%newTemp) + STR_WEB_INTERFACE)
 
-		tempControl.setFridgeTemp(newTemp)
+		self.tempControl.setFridgeTemp(newTemp)
 
 
 	def	setTempFormat(self, val):

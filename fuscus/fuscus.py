@@ -30,8 +30,8 @@ import signal
 
 import AppConfigDefault # FIXME is this needed?
 
-import piLink
-piLink = piLink.piLink()
+#import piLink
+#piLink = piLink.piLink()
 
 import ui
 
@@ -92,6 +92,7 @@ def loop():
 	spinindex = 0
 
 	while keepRunning:
+		ui.ticks()
 		if (time.time() - lastUpdate >= 1.0): # update settings every second
 			# round to nearest 1 second boundary to keep in sync with real time	
 			lastUpdate = round(time.time())

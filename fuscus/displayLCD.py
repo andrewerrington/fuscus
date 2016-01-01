@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-import math
-
-from constants import *
-from tempControl import MODES, STATES
-import ticks
-
 #
 # Copyright 2012-2013 BrewPi/Elco Jacobs.
 # Copyright 2015 Andrew Errington
@@ -25,6 +19,12 @@ import ticks
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+import math
+
+from constants import *
+from tempControl import MODES, STATES, MIN_COOL_ON_TIME, MIN_HEAT_ON_TIME
+import ticks
 
 
 # Constant strings used multiple times
@@ -176,12 +176,12 @@ def printState():
 		hours = minutes / 60
 		# Nokia LCD is 17 characters wide, so bring nnmnn 3 characters left
 		# by padding with spaces on the right so we can see.
-		printString="%02dm%02d   "%(minutes, time%60)
+		printString="%dm%02d   "%(minutes, time%60)
 
 		# If we have hours, then mnn seconds will not be visible on LCD, but
 		# will be visible on web interface.
 		if (int(hours) != 0):
-			printString="%2dh%02dm%02d"%(hours, minutes%60, time%60)
+			printString="%dh%02dm%02d"%(hours, minutes%60, time%60)
 
 		LCD.printat(20-len(printString), 3, printString)
 
@@ -232,6 +232,10 @@ def printTemperatureAt(x, y, temp):
 	printTemperature(temp)
 
 
+def printAt(x, y, s):
+	LCD.printat(x,y,s)
+
+
 def printTemperature(temp):
 	if (temp is None) or math.isnan(temp): #(isDisabledOrInvalid(temp)):
 		LCD.print(" --.-")
@@ -258,6 +262,11 @@ def printAll():	# FIXME: This doesn't seem to be used.
 	printState()
 	printAllTemperatures()
 	printMode()
+
+
+def update():
+	'''Call the update() function to copy the display contents to the hardware.'''
+	LCD.update()
 
 
 #def resetBacklightTimer():

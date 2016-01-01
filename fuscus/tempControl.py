@@ -145,10 +145,7 @@ class tempController:
 		self.light = None	# Not implemented
 		self.fan = None		# Not implemented
 		
-		# Timers
-		self.lastIdleTime = 0
-		self.lastHeatTime = 0
-		self.lastCoolTime = 0
+		self.lastIdleTime = ticks.seconds()
 		self.waitTime = None
 		
 		self.storedBeerSetting = None
@@ -176,8 +173,8 @@ class tempController:
 		# connect) could damage the compressor
 		# For test purposes, set these to -3600 to eliminate waiting
 		# after reset
-		self.lastHeatTime = 0
-		self.lastCoolTime = 0
+		self.lastHeatTime = ticks.seconds()
+		self.lastCoolTime = ticks.seconds()
 		
 		self.integralUpdateCounter = 0
 
