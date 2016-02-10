@@ -1,0 +1,29 @@
+Qty.,Part No.,Supplier,Description,Unit price,Ext. price.,Notes
+1,378251,DX,Raspberry Pi 2B,41.91,41.91,
+1,346332,DX,Raspberry Pi 2 B case,3.23,3.23,
+1,,Local,8Gb Micro SD card,4.00,4.00,Install Raspbian
+2,143929,DX,DS18B20,1.87,3.74,
+1,142889,DX,Waterproof DS18B20,3.60,3.60,
+1,140226,DX,5110 Display,3.62,3.62,
+1,302050,DX,Rotary switch,2.41,2.41,Needs pullups.  This is a 2-pack.
+1,290132,DX,Dual relay board,2.69,2.69,
+1,,Local,Electrical enclosure,7.00,7.00,
+2,,Local,Single panel outlet,1.00,2.00,
+1,,Local,Single flush outlet,1.00,1.00,
+1,,Local,Electrical back box,1.00,1.00,
+1,,Local,Fuseholder 10A 5x20mm,0.40,0.40,
+1,,Local,Mains cable (5m),5.00,5.00,
+1,409509,DX,90 degree USB cable 30cm,2.00,2.00,This is a 2-pack.
+1,,Local,USB 2A PSU,3.00,3.00,
+1,419910,DX,RJ45 panel socket,2.13,2.13,
+1,,Local,RJ45 patch cable 30cm,0.60,0.60,
+1,296681,DX,RJ11 panel socket,3.66,3.66,This is a 4-pack
+2,176757,DX,RJ11 splitter,1.82,3.64,This is a 2-pack.
+3,,Local,RJ11 patch cable,1.00,3.00,
+1,,Local,4k7 resistor,0.10,0.10,One-wire pullup.
+2,,Local,10k resistor,0.10,0.20,Rotary encoder pullup.
+1,151650,DX,30cm F-F dupont wires,3.16,3.16,
+1,,Local,Door switch,2.00,2.00,Reed relay & magnet.
+1,135036,DX,Buzzer,1.99,1.99,
+,,,,,,
+,,,,,107.08,"+nuts, bolts, screws, wire, etc."
