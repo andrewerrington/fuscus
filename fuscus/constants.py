@@ -31,6 +31,9 @@ import door
 import Menu
 import piLink
 
+config = configparser.ConfigParser()
+config.read('fuscus.ini')
+
 # Port for TCP/IP control FIXME: not implemented yet
 port = 25518
 
@@ -48,23 +51,20 @@ lcd_DIN = 19	# These three pins are fixed to the hardware SPI module.
 lcd_SCLK = 23	# The numbers here are for reference only.
 lcd_SCE = 24	# We can see which pins are in use.
 
+# Buzzer (1 GPIO + GND)
+buzzer_pin = 15
+
 # Relay board (2x 240Vac 10A relays) (2 GPIO + 3.3V + 5V + GND)
 relay_HOT = 16
 relay_COLD = 18
-
-# Door (1 GPIO + GND)
-door_pin = 3	# Pin 3 has a 1.8k pull-up
 
 # One-wire bus (implemented by external system) (1 GPIO + 3.3V + GND)
 one_wire = 7	# This number is for reference only
 
 # One-wire sensor IDs
-config = configparser.ConfigParser()
-config.read('fuscus.ini')
-sensors = config['sensors']
-ID_fridge = sensors.get('fridge')
-ID_beer = sensors.get('beer')
-ID_ambient = sensors.get('ambient')
+ID_fridge = config['sensors'].get('fridge')
+ID_beer = config['sensors'].get('beer')
+ID_ambient = config['sensors'].get('ambient')
 
 if not(ID_fridge):
 	raise ValueError("1-wire address of fridge not specified in 'fuscus.ini'.")
@@ -78,6 +78,14 @@ if ID_ambient == '':
 print("Fridge sensor : %s"%ID_fridge)
 print("Beer sensor   : %s"%ID_beer)
 print("Ambient sensor: %s"%ID_ambient)
+
+# Door (1 GPIO + GND)
+# Best pin for this is pin 3 as it has a 1.8k pull-up on board
+door_pin = config['door'].get('pin', 3)
+if door_pin == '':
+	door_pin = None
+
+door_open_state = config['door'].get('open_state',True)
 
 # Unused GPIOs for reference
 ser_TX = 8
@@ -94,7 +102,7 @@ BACKLIGHT_BRIGHT_LEVEL = 50
 BACKLIGHT_DIM_LEVEL = 20
 
 # Global objects for our hardware devices
-DOOR = door.door(door_pin)
+DOOR = door.door(door_pin, door_open_state)
 
 encoder = rotaryEncoder.rotaryEncoder(rotary_A, rotary_B, rotary_PB)
 encoder.start()
