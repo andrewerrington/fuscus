@@ -181,7 +181,7 @@ def printState():
 		# If we have hours, then mnn seconds will not be visible on LCD, but
 		# will be visible on web interface.
 		if (int(hours) != 0):
-			printString="%dh%02dm%02d"%(hours, minutes%60, time%60)
+			printString="%2dh%02dm%02d"%(hours, minutes%60, time%60)
 
 		LCD.printat(20-len(printString), 3, printString)
 
