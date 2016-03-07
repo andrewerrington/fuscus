@@ -42,7 +42,7 @@ STR_FMT_SET_TO = " set to %s "
 
 class piLink:
 
-	def __init__(self, tempControl):
+	def __init__(self, tempControl, path):
 		# Set up a pty to accept serial input as if we are an Arduino
 		# FIXME: Make this a socket interface.  The main brewpi code can send to a socket.
 		# use port 25518 (beer 2 5 5 18)
@@ -50,12 +50,25 @@ class piLink:
 		master, slave = pty.openpty()
 		port_name = os.ttyname(slave)
 		os.chmod(port_name, 0o666)
-		print("Listening on '%s'"%port_name)
+		
+		# Create a new symlink for our instance, as the pty number can change each time
+		
+		# Delete the symlink for our instance, in case we crashed last time.
+		if os.path.islink(path):
+			try:
+				os.unlink(path)
+			except Exception:
+				pass
+			
+		os.symlink(port_name, path)
+		
+		print("Listening on '%s' as '%s'"%(port_name,path))
 		self.f = os.fdopen(master, 'wb+', buffering=0)
 		self.portName = port_name
 		self.buf = ''
 		
 		self.tempControl = tempControl
+		self.tempControl.piLink = self #FIXME is this good practice?
 
 
 	def updateBuffer(self):
@@ -196,6 +209,7 @@ class piLink:
 		#define JSON_TIME		"t"
 		#define JSON_ROOM_TEMP  "rt"
 
+		'''COMPACT_SERIAL is not in use
 		t = self.tempControl.getBeerTemp()
 		if t:
 			temps['bt'] = t
@@ -222,7 +236,32 @@ class piLink:
 		if t:
 			temps['rt'] = t
 
-		temps['s'] = self.tempControl.getState()
+		temps['s'] = self.tempControl.getState()'''
+
+		# These field names are in use
+		#define JSON_BEER_TEMP  "BeerTemp"
+		#define JSON_BEER_SET   "BeerSet"
+		#define JSON_BEER_ANN   "BeerAnn"
+		#define JSON_FRIDGE_TEMP "FridgeTemp"
+		#define JSON_FRIDGE_SET  "FridgeSet"
+		#define JSON_FRIDGE_ANN  "FridgeAnn"
+		#define JSON_STATE              "State"
+		#define JSON_TIME               "Time"
+		#define JSON_ROOM_TEMP  "RoomTemp"
+
+		temps['BeerTemp'] = self.tempControl.getBeerTemp()
+		temps['BeerSet'] = self.tempControl.getBeerSetting()
+		temps['BeerAnn'] = beerAnnotation
+		temps['FridgeTemp'] = self.tempControl.getFridgeTemp()
+		temps['FridgeSet'] = self.tempControl.getFridgeSetting()
+		temps['FridgeAnn'] = fridgeAnnotation
+
+		t = self.tempControl.getRoomTemp()	# Room temp sensor may not be present
+		if t:
+			temps['RoomTemp'] = t
+
+		temps['State'] = self.tempControl.getState()
+
 
 		self.f.write(bytes('T:'+json.dumps(temps)+'\r\n','UTF-8'))
 

@@ -32,7 +32,7 @@ import Menu
 import piLink
 
 config = configparser.ConfigParser()
-config.read('fuscus.ini')
+config.read('fuscus.ini') #FIXME Make this a command-line parameter
 
 # Port for TCP/IP control FIXME: not implemented yet
 port = 25518
@@ -81,7 +81,7 @@ print("Ambient sensor: %s"%ID_ambient)
 
 # Door (1 GPIO + GND)
 # Best pin for this is pin 3 as it has a 1.8k pull-up on board
-door_pin = config['door'].get('pin', 3)
+door_pin = config['door'].get('pin')
 if door_pin == '':
 	door_pin = None
 
@@ -119,6 +119,6 @@ LCD = lcd.lcd(lines = 6, chars = 20, hardware = LCD_hardware)
 tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
 							cooler = cooler, heater = heater, door = DOOR)
 
-piLink = piLink.piLink(tempControl=tempControl)
+piLink = piLink.piLink(tempControl = tempControl, path = config['port'].get('path'))
 
 menu = Menu.Menu(encoder=encoder, tempControl=tempControl, piLink=piLink)

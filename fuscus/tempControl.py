@@ -178,6 +178,8 @@ class tempController:
 		
 		self.integralUpdateCounter = 0
 
+		# piLink will insert a reference to itself as self.piLink here
+
 
 	def reset(self):
 		self.doPosPeakDetect = False
@@ -296,7 +298,9 @@ class tempController:
 
 	def updateState(self):
 
-		print("Update state. Mode %s, state %s"%({v: k for k, v in MODES.items()}[self.cs.mode], {v: k for k, v in STATES.items()}[self.state]))
+		print("Update state. Mode %s, state %s"%
+			({v: k for k, v in MODES.items()}[self.cs.mode],
+			{v: k for k, v in STATES.items()}[self.state]))
 
 		stayIdle = False
 		newDoorOpen = self.door.isOpen
@@ -304,7 +308,8 @@ class tempController:
 		if (newDoorOpen != self.doorOpen):
 			self.doorOpen = newDoorOpen
 			print("Fridge door %s"%('opened' if self.doorOpen else 'closed'))
-			#FIXME: piLink.printFridgeAnnotation(PSTR("Fridge door %S"), doorOpen ? PSTR("opened") : PSTR("closed"));
+			self.piLink.printFridgeAnnotation("Fridge door %s"%
+									 ("opened" if self.doorOpen  else "closed"))
 
 		if (self.cs.mode == MODES['MODE_OFF']):
 			self.state = STATES['STATE_OFF']
