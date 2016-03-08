@@ -9,21 +9,21 @@
 8. *sudo adduser fuscus sudo* (because fuscus needs to write to GPIO)
 9. Use *sudo visudo* to add this line to allow fuscus to run the python file without needing a password
 **fuscus ALL = NOPASSWD: /home/fuscus/fuscus.py**
-10. Optionally configure wifi using:
+10. Optionally configure wifi using:  
 https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
-11. Optionally check/configure temperature sensors using this code:
+11. Optionally check/configure temperature sensors using this code:  
 https://www.raspberrypi.org/forums/viewtopic.php?f=37&t=77611
-12. Install brewpi software using these instructions:
+12. Install brewpi software using these instructions:  
 http://docs.brewpi.com/automated-brewpi-install/automated-brewpi-install.html
 13. Edit **~brewpi/settings/config.cfg** to change the port setting to **/dev/fuscus** (or whatever you specify in fuscus.ini)
-14. Copy fuscus code from github
+14. Copy fuscus code from github  
 We are going to copy the fuscus source code from the fuscus subdirectory in the git repository into the fuscus home directory, and ignore the other files.
-* login as **fuscus**
-* *git init*
-* *git remote add -f origin https://github.com/andrewerrington/fuscus.git*
-* *git config core.sparseCheckout true*
-* *echo "fuscus/" >> .git/info/sparse-checkout*
-* *git pull origin master*
+login as **fuscus**  
+*git init*  
+*git remote add -f origin https://github.com/andrewerrington/fuscus.git*  
+*git config core.sparseCheckout true*  
+*echo "fuscus/" >> .git/info/sparse-checkout*  
+*git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
 15. Run fuscus with *sudo ./fuscus.py*
 
