@@ -81,11 +81,11 @@ print("Ambient sensor: %s"%ID_ambient)
 
 # Door (1 GPIO + GND)
 # Best pin for this is pin 3 as it has a 1.8k pull-up on board
-door_pin = config['door'].get('pin')
+door_pin = config['door'].getint('pin')
 if door_pin == '':
 	door_pin = None
 
-door_open_state = config['door'].get('open_state',True)
+door_open_state = config['door'].getboolean('open_state',True)
 
 # Unused GPIOs for reference
 ser_TX = 8
