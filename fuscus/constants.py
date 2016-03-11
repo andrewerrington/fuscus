@@ -21,6 +21,7 @@
 #
 
 import configparser
+import argparse
 
 import tempControl
 import relay
@@ -31,15 +32,28 @@ import door
 import Menu
 import piLink
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', '-c',
+	nargs='?',
+	default='fuscus.ini',
+	help='configuration file name' )
+
+args = parser.parse_args()
+
+print("Using config file '%s'"%args.config)
+
 config = configparser.ConfigParser()
-config.read('fuscus.ini') #FIXME Make this a command-line parameter
+config.read(args.config)
 
 # Port for TCP/IP control FIXME: not implemented yet
-port = 25518
+port = config['network'].getint('port',25518)
+print("Network port: %s (not implemented)"%port)
 
 # GPIO pins (board numbering: GPIO.setmode(GPIO.BOARD))
 # Rotary encoder (3 GPIO + 3.3V & GND)
-rotary_PB = 5	# Pin 5 has a 1.8k pull-up.  Also used to restart from halt.
+# Best pin for pushbutton is pin 5 as it has a 1.8k pull-up.
+# Also used to restart from halt.
+rotary_PB = 5
 rotary_A = 13
 rotary_B = 11
 
@@ -52,11 +66,16 @@ lcd_SCLK = 23	# The numbers here are for reference only.
 lcd_SCE = 24	# We can see which pins are in use.
 
 # Buzzer (1 GPIO + GND)
+# FIXME: Not implemented
 buzzer_pin = 15
 
 # Relay board (2x 240Vac 10A relays) (2 GPIO + 3.3V + 5V + GND)
-relay_HOT = 16
-relay_COLD = 18
+relay_HOT = config['relay'].getint('hot')
+invert_hot = config['relay'].getboolean('invert_hot')
+relay_COLD = config['relay'].getint('cold')
+invert_cold = config['relay'].getboolean('invert_cold')
+print("Hot relay on pin %s (%s)"%(relay_HOT,'inverted' if invert_hot else 'not inverted'))
+print("Cold relay on pin %s (%s)"%(relay_COLD,'inverted' if invert_cold else 'not inverted'))
 
 # One-wire bus (implemented by external system) (1 GPIO + 3.3V + GND)
 one_wire = 7	# This number is for reference only
@@ -87,10 +106,14 @@ if door_pin == '':
 
 door_open_state = config['door'].getboolean('open_state',True)
 
+if door_pin:
+	print("Door switch on pin %s, open state %s"%(door_pin,door_open_state))
+else:
+	print("No door switch.")
+
 # Unused GPIOs for reference
 ser_TX = 8
 ser_RX = 10
-free_1 = 15
 free_2 = 26
 
 # Backlight control
@@ -107,8 +130,8 @@ DOOR = door.door(door_pin, door_open_state)
 encoder = rotaryEncoder.rotaryEncoder(rotary_A, rotary_B, rotary_PB)
 encoder.start()
 
-heater = relay.relay(relay_HOT, invert = True)
-cooler = relay.relay(relay_COLD, invert = True)
+heater = relay.relay(relay_HOT, invert = invert_hot)
+cooler = relay.relay(relay_COLD, invert = invert_cold)
 
 LCD_hardware = pcd8544.pcd8544(DC = lcd_DC, RST = lcd_RST)
 

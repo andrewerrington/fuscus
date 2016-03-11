@@ -25,12 +25,11 @@ login as **fuscus**
 *git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
 13. Run fuscus  
-*cd fuscus*
+*cd fuscus*  
 *sudo ./fuscus.py*
-
 14. Log in as **pi** and install brewpi software using these instructions:  
 http://docs.brewpi.com/automated-brewpi-install/automated-brewpi-install.html
-15. Edit **~brewpi/settings/config.cfg** to change the port setting to **/dev/fuscus** (or whatever you specify in fuscus.ini)
+15. Edit **~brewpi/settings/config.cfg** to change the port setting to **port = /dev/fuscus** (or whatever you specify in fuscus.ini)
 16. If you see an error *[Errno 22] Invalid argument* from BrewPi then edit BrewPiUtil.py.  Add **dsrdtr=True** and **rtscts=True** to the *ser = serial.Serial* line, around line 132.  The background of this bug is here:  
 https://github.com/bewest/decoding-carelink/pull/171
 
