@@ -70,15 +70,24 @@ class DS18B20(threading.Thread):
 					tfile.close
 				except: 
 					self.temperature = None
-					print("Could not open '%s'"%self.deviceID)
+					print("Could not open '%s'"%self.filename)
 					break
 
 				if text.split("\n")[0][-3:] == "YES":
 					temperature = float(text.split("\n")[1].split(" ")[9][2:])/1000
 				else:
-					self.temperature = None
-					print("Error reading '%s'"%self.deviceID)
-					break
+					# Reading the sensor did not return "YES".
+					# Let's try again a few times.
+					print("Sensor '%s' did not return 'YES'"%self.deviceID)
+					print("Sensor returned '%s'"%text)
+					if retries < RETRY_LIMIT:
+						print("Re-reading '%s'"%device)
+						retries += 1
+						continue
+					else:
+						self.temperature = None
+						print("Sensor '%s' did not return 'YES' after %s retries.  Giving up."%(self.deviceID,RETRY_LIMIT))
+						break
 
 				if temperature == 85.0:
 					# A common error condition.  If your application
