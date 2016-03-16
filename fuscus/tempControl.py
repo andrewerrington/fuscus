@@ -383,7 +383,7 @@ class tempController:
 					self.updateWaitTime(COOL_PEAK_DETECT_TIME, sinceCooling)
 					self.state = STATES['WAITING_FOR_PEAK_DETECT']
 				elif self.doPosPeakDetect:
-					self.tempControl.updateWaitTime(HEAT_PEAK_DETECT_TIME, sinceHeating)
+					self.updateWaitTime(HEAT_PEAK_DETECT_TIME, sinceHeating)
 					self.state = STATES['WAITING_FOR_PEAK_DETECT']
 
 		elif self.state in (STATES['COOLING'], STATES['COOLING_MIN_TIME']):
