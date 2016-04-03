@@ -87,7 +87,7 @@ class DS18B20(threading.Thread):
 					print("Sensor '%s' did not return 'YES'"%self.deviceID)
 					print("Sensor returned '%s'"%text)
 					if retries < RETRY_LIMIT:
-						print("Re-reading '%s'"%device)
+						print("Re-reading '%s'"%self.deviceID)
 						retries += 1
 						continue
 					else:
@@ -99,7 +99,7 @@ class DS18B20(threading.Thread):
 					# encounters this temperature genuinely in your
 					# environment consider removing this test.
 					if retries < RETRY_LIMIT:
-						print("Discarding 85.0 reading.  Re-reading '%s'"%device)
+						print("Discarding 85.0 reading.  Re-reading '%s'"%self.deviceID)
 						retries += 1
 						continue
 					else:
