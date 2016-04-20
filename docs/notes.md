@@ -10,7 +10,7 @@
 7. *sudo adduser fuscus* (to make a new user for fuscus code)
 8. *sudo adduser fuscus sudo* (because fuscus needs to write to GPIO)
 9. Use *sudo visudo* to add this line to allow fuscus to run the python file without needing a password  
-**fuscus ALL = NOPASSWD: /home/fuscus/fuscus.py**
+**fuscus ALL = NOPASSWD: /home/fuscus/fuscus/fuscus.py**
 10. Optionally configure wifi using:  
 https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
 11. Optionally check/configure temperature sensors using this code:  
@@ -24,15 +24,18 @@ login as **fuscus**
 *echo "fuscus/" >> .git/info/sparse-checkout*  
 *git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
-13. Run fuscus  
+13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings.  
 *cd fuscus*  
+*nano fuscus.ini*
+14. Run fuscus  
 *sudo ./fuscus.py*
-14. Log in as **pi** and install brewpi software using these instructions:  
+15. Log in as **pi** and install brewpi software using these instructions:  
 http://docs.brewpi.com/automated-brewpi-install/automated-brewpi-install.html
-15. Edit **~brewpi/settings/config.cfg** to change the port setting to **port = /dev/fuscus** (or whatever you specify in fuscus.ini)
-16. If you see an error *[Errno 22] Invalid argument* from BrewPi then edit BrewPiUtil.py.  Add **dsrdtr=True** and **rtscts=True** to the *ser = serial.Serial* line, around line 132.  The background of this bug is here:  
-https://github.com/bewest/decoding-carelink/pull/171
+16. Edit **~brewpi/settings/config.cfg** to change the port setting to **port = /dev/fuscus** (or whatever you specify in fuscus.ini)
+17. If you see an error *[Errno 22] Invalid argument* from BrewPi then edit BrewPiUtil.py.  Add **dsrdtr=True** and **rtscts=True** to the *ser = serial.Serial* line, around line 132.  The background of this bug is here:  
+https://github.com/bewest/decoding-carelink/pull/171  
 
+Note that you can run fuscus in a *screen* session for experimenting, or you can add the command to start fuscus to the fuscus user's crontab in a *@reboot* entry.  
 
 ## Notes for later development
 Change the line in BrewPiUtil.py around line 130:

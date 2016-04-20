@@ -20,10 +20,12 @@ will continue to monitor and maintain the last set temperature.  If
 the control is done by the Pi then it could crash and leave the heater
 or cooler stuck on, which will ruin the fermentation.
 
-Despite the possible risks of failure and loss this project re-implements
+Despite the possible risks of failure this project re-implements
 the Arduino control code (v0.2.11) in Python so that it can run natively on
 the Pi.  The other BrewPi components (brewpi-www and brewpi-script) will
 talk to this Python code as if it were an Arduino, so they can be be used
 unchanged.  Hardware that was connected to the Arduino, such as 1-wire
 temperature sensors, an LCD, and relays for the heater and cooler are
 connected to the Pi GPIO pins.
+
+There are brief installation notes [here](../blob/master/docs/notes.md).
