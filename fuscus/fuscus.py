@@ -124,6 +124,7 @@ def loop():
 
 		time.sleep(0.05) # Don't hog the processor
 
+	piLink.cleanup()
 	ui.LCD.printat(0, 5, "Shutting down.   ")
 	ui.update()
 

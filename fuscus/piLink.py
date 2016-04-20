@@ -51,9 +51,11 @@ class piLink:
 		port_name = os.ttyname(slave)
 		os.chmod(port_name, 0o666)
 		
-		# Create a new symlink for our instance, as the pty number can change each time
+		# Create a new symlink for our instance, as the pty
+		# number can change each time.
 		
-		# Delete the symlink for our instance, in case we crashed last time.
+		# First, delete the symlink for our instance, in case
+		# we crashed last time.
 		if os.path.islink(path):
 			try:
 				os.unlink(path)
@@ -65,10 +67,20 @@ class piLink:
 		print("Listening on '%s' as '%s'"%(port_name,path))
 		self.f = os.fdopen(master, 'wb+', buffering=0)
 		self.portName = port_name
+		self.path = path
 		self.buf = ''
 		
 		self.tempControl = tempControl
 		self.tempControl.piLink = self #FIXME is this good practice?
+
+
+	def cleanup(self):
+		# Delete the symlink for our instance when we exit
+                if os.path.islink(self.path):
+                        try:
+                                os.unlink(self.path)
+                        except Exception:
+                                pass
 
 
 	def updateBuffer(self):
@@ -356,6 +368,7 @@ class piLink:
 	def receiveJson(self):	# receive settings as JSON key:value pairs
 		jsonBuf = ''
 		while 1:	# FIXME Implement a one-second timeout here
+			print("Timeout needed!")
 			inByte = self.updateBuffer()
 			jsonBuf += inByte
 			if inByte == '}':

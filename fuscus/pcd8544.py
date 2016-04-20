@@ -62,18 +62,20 @@ BITREVERSE = map(bit_reverse, range(256))
 class pcd8544:
 	
 	def __init__(self, DC = 16, RST = 18, LED = 12,
-				dev = (0, 0), speed = 4000000, backlight = 0, contrast = 185):
+		dev = (0, 0), speed = 4000000, backlight = 0,
+		contrast = 185):
 	
 		self._DC = DC
 		self._RST = RST
 		self._LED = LED
 		
 		self.font = FONT
+		
+		if self._LED is not None:
+			GPIO.setup(self._LED, GPIO.OUT)
 
-		GPIO.setup(self._LED, GPIO.OUT)
-
-		 # 100Hz refresh, should be low flicker
-		self.backlight_control = GPIO.PWM(self._LED, 100)
+			# 100Hz refresh, should be low flicker
+			self.backlight_control = GPIO.PWM(self._LED, 100)
 
 		self.spi = spidev.SpiDev()
 		self.spi.open(dev[0], dev[1])
@@ -88,10 +90,11 @@ class pcd8544:
 		# Extended mode, bias, vop, basic mode, non-inverted display.
 		self.set_contrast(contrast)
 
-		# Turn the backlight to zero brightness.
-		self.backlight_control.start(0)
-		# Then set the desired brightness (so we get a range check on the argument).
-		self.backlight(backlight)
+		if self._LED is not None:
+			# Turn the backlight to zero brightness.
+			self.backlight_control.start(0)
+			# Then set the desired brightness (so we get a range check on the argument).
+			self.backlight(backlight)
 		
 		self.cls()
 		self.x = 0
@@ -123,12 +126,13 @@ class pcd8544:
 
 
 	def backlight(self, percent):
-		if ((percent is True) or (percent > 100)):
-			self.backlight_control.ChangeDutyCycle(100)
-		elif ((percent is False) or (percent < 0)):
-			self.backlight_control.ChangeDutyCycle(0)
-		else:
-			self.backlight_control.ChangeDutyCycle(percent)
+		if self._LED is not None:
+			if ((percent is True) or (percent > 100)):
+				self.backlight_control.ChangeDutyCycle(100)
+			elif ((percent is False) or (percent < 0)):
+				self.backlight_control.ChangeDutyCycle(0)
+			else:
+				self.backlight_control.ChangeDutyCycle(percent)
 
 
 	def set_contrast(self, contrast):
@@ -246,3 +250,4 @@ class pcd8544:
  		# Switch back to horizontal write mode for text
 		GPIO.output(self._DC, GPIO.LOW)
 		self.spi.writebytes([0x20])
+

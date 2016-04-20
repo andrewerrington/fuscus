@@ -47,7 +47,7 @@ def init():
 
 def showStartupPage(port_name):
 	LCD.clear()
-	LCD.println(" BrewPi - Fuscus ")
+	LCD.println("Fuscus Controller")
 	LCD.println("  version 0.1.0")
 	LCD.println(port_name)
 	
@@ -94,4 +94,3 @@ def ticks():
 		while encoder.pushed:	# Wait for button to be released
 			pass
 		menu.pickSettingToChange()
-	

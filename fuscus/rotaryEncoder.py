@@ -28,7 +28,7 @@ GPIO.setmode(GPIO.BOARD)
 class rotaryEncoder(threading.Thread):
 	"""A threaded rotary encoder driver.  Read .pos or .pushed any time."""
 	
-	def __init__(self, A, B, PB):
+	def __init__(self, A, B, PB, dummy = False):
 		"""Initialise hardware.  A and B are the quadrature pins, PB is the pushbutton."""
 		
 		threading.Thread.__init__(self)
@@ -36,15 +36,20 @@ class rotaryEncoder(threading.Thread):
 		self._A = A
 		self._B = B
 		self._PB = PB
-		
-		GPIO.setup(self._PB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(self._A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(self._B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-		# Initialise internal state of Gray code
-		self._state = GPIO.input(self._B)<<3 | GPIO.input(self._A)<<2 | \
-					GPIO.input(self._B)<<1 | GPIO.input(self._A)
+		self._dummy = dummy	# Special flag for no physical hardware
 		
+		if not self._dummy:
+			GPIO.setup(self._PB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+			GPIO.setup(self._A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+			GPIO.setup(self._B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+			# Initialise internal state of Gray code
+			self._state = GPIO.input(self._B)<<3 | GPIO.input(self._A)<<2 | \
+					GPIO.input(self._B)<<1 | GPIO.input(self._A)
+		else:
+			self._state = 0		
+
 		self.internal_pos = 0	# There are four states per physical click.
 		self.pos = 0			# infinite position value.  +ve is clockwise
 		self.last_pos = 0
@@ -72,7 +77,8 @@ class rotaryEncoder(threading.Thread):
 			self._state <<= 2	# Move the previous state to bits 3 and 2
 			self._state &= 0x0F # Mask off the old previous state
 			# Read the current state (two IO pins) into bits 1 and 0
-			self._state |= GPIO.input(self._B)<<1 | GPIO.input(self._A)
+			if not self._dummy:
+				self._state |= GPIO.input(self._B)<<1 | GPIO.input(self._A)
 
 			# Now look at the bit pattern created by the two pairs
 			# of bits.
@@ -106,7 +112,11 @@ class rotaryEncoder(threading.Thread):
 			if self._state & 0x03 == 0:
 				self.internal_pos = self.pos * 4
 			
-			time.sleep(0.001)
+			if self._dummy:
+				# If there's no hardware, don't sample often
+				time.sleep(2)
+			else:
+				time.sleep(0.001)
 
 
 	def stop(self):
@@ -114,8 +124,10 @@ class rotaryEncoder(threading.Thread):
 
 	@property
 	def pushed(self):
-		return not(GPIO.input(self._PB))	# The button is pushed (shorted to GND)
-
+		if not self._dummy:
+			return not(GPIO.input(self._PB))	# The button is pushed (shorted to GND)
+		else:
+			return False
 
 	@property
 	def changed(self):
