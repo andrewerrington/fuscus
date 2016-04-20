@@ -28,4 +28,4 @@ unchanged.  Hardware that was connected to the Arduino, such as 1-wire
 temperature sensors, an LCD, and relays for the heater and cooler are
 connected to the Pi GPIO pins.
 
-There are brief installation notes [here](../blob/master/docs/notes.md).
+There are brief installation notes [here](../master/docs/notes.md).
