@@ -37,7 +37,14 @@ http://docs.brewpi.com/automated-brewpi-install/automated-brewpi-install.html
 The background of this bug is here:  
 https://github.com/bewest/decoding-carelink/pull/171  
 
-Note that you can run fuscus in a *screen* session for experimenting, or you can add the command to start fuscus to the fuscus user's crontab in a *@reboot* entry.  
+Note that you can run fuscus in a *screen* session for experimenting, or
+you can add the command to start fuscus to the fuscus user's crontab in
+a *@reboot* entry.  
+
+When fuscus is running it will listen on /dev/fuscus for a connection
+from BrewPi.  BrewPi will attempt to connect every minute.  This means
+you may have to wait for up to one minute for BrewPi to connect to fuscus
+and start getting data. 
 
 ## Notes for later development
 Change the line in BrewPiUtil.py around line 130:
