@@ -768,29 +768,35 @@ class tempController:
         return STATES['DOOR_OPEN'] if self.isDoorOpen() else self.getState()
 
     # Convert celsius to fahrenheit, and vice versa
-    def temp_convert(self, temp, original_units, desired_units):
+    def temp_convert(self, temp, original_units, desired_units, diff=False):
         if original_units == desired_units:
             return temp
 
         if original_units == "C" and desired_units == "F":
-            return temp * 1.8 + 32
+            if diff:
+                return temp * 1.8
+            else:
+                return temp * 1.8 + 32
         elif original_units == "F" and desired_units == "C":
-            return (temp - 32) / 1.8
+            if diff:
+                return temp / 1.8
+            else:
+                return (temp - 32) / 1.8
         else:
             logging.error("Invalid units passed to temp_convert. Orig: {}, Desired: {}".format(original_units,
                                                                                                desired_units))
             return None  # Should probably return something other than none, or raise an error.
 
     # Converts a temperature to the external value (C or F)
-    def temp_convert_to_external(self, temp):
-        if temp:
-            return self.temp_convert(temp, "C", self.cc.tempFormat)
+    def temp_convert_to_external(self, temp, diff=False):
+        if temp is not None:
+            return self.temp_convert(temp, "C", self.cc.tempFormat, diff)
         return temp  # Returns None if that's what we were passed
 
     # Converts a temperature to the internal value (C)
-    def temp_convert_to_internal(self, temp):
-        if temp:
-            return self.temp_convert(temp, self.cc.tempFormat, "C")
+    def temp_convert_to_internal(self, temp, diff=False):
+        if temp is not None:
+            return self.temp_convert(temp, self.cc.tempFormat, "C", diff)
         return temp  # Returns None if that's what we were passed
 
     # When we convert from C to F (or vice versa) we need to convert all the control variables

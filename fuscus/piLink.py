@@ -327,16 +327,17 @@ class piLink:
         # Fix up the key names that are not the same
         d[JSONKEY_tempSettingMin] = self.tempControl.temp_convert_to_external(d.pop('tempSettingMin'))
         d[JSONKEY_tempSettingMax] = self.tempControl.temp_convert_to_external(d.pop('tempSettingMax'))
-        d[JSONKEY_iMaxError] = d.pop('iMaxError')
-        d[JSONKEY_idleRangeHigh] = d.pop('idleRangeHigh')
+        d[JSONKEY_iMaxError] = self.tempControl.temp_convert_to_external(d.pop('iMaxError'), diff=True)
+        d[JSONKEY_idleRangeHigh] = self.tempControl.temp_convert_to_external(d.pop('idleRangeHigh'), diff=True)
 
-        d[JSONKEY_idleRangeLow] = d.pop('idleRangeLow')
-        d[JSONKEY_heatingTargetUpper] = d.pop('heatingTargetUpper')
-        d[JSONKEY_heatingTargetLower] = d.pop('heatingTargetLower')
-        d[JSONKEY_coolingTargetUpper] = d.pop('coolingTargetUpper')
-        d[JSONKEY_coolingTargetLower] = d.pop('coolingTargetLower')
+        d[JSONKEY_idleRangeLow] = self.tempControl.temp_convert_to_external(d.pop('idleRangeLow'), diff=True)
+        d[JSONKEY_heatingTargetUpper] = self.tempControl.temp_convert_to_external(d.pop('heatingTargetUpper'), diff=True)
+        d[JSONKEY_heatingTargetLower] = self.tempControl.temp_convert_to_external(d.pop('heatingTargetLower'), diff=True)
+        d[JSONKEY_coolingTargetUpper] = self.tempControl.temp_convert_to_external(d.pop('coolingTargetUpper'), diff=True)
+        d[JSONKEY_coolingTargetLower] = self.tempControl.temp_convert_to_external(d.pop('coolingTargetLower'), diff=True)
         d[JSONKEY_maxHeatTimeForEstimate] = d.pop('maxHeatTimeForEstimate')
         d[JSONKEY_maxCoolTimeForEstimate] = d.pop('maxCoolTimeForEstimate')
+        # TODO - Determine if the filters have units (need to be converted)
         d[JSONKEY_fridgeFastFilter] = d.pop('fridgeFastFilter')
         d[JSONKEY_fridgeSlowFilter] = d.pop('fridgeSlowFilter')
         d[JSONKEY_fridgeSlopeFilter] = d.pop('fridgeSlopeFilter')
@@ -351,9 +352,9 @@ class piLink:
     def sendControlVariables(self, cv):
         d = vars(cv).copy()
         # Fix up the key names that are not the same
-        d[JSONKEY_estimatedPeak] = d.pop('estimatedPeak')
-        d[JSONKEY_negPeakEstimate] = d.pop('negPeakEstimate')
-        d[JSONKEY_posPeakEstimate] = d.pop('posPeakEstimate')
+        d[JSONKEY_estimatedPeak] = self.tempControl.temp_convert_to_external(d.pop('estimatedPeak'))
+        d[JSONKEY_negPeakEstimate] = self.tempControl.temp_convert_to_external(d.pop('negPeakEstimate'))
+        d[JSONKEY_posPeakEstimate] = self.tempControl.temp_convert_to_external(d.pop('posPeakEstimate'))
 
         self.f.write(bytes('V:' + json.dumps(d) + '\r\n', 'UTF-8'))
 
@@ -409,11 +410,16 @@ class piLink:
         # JSON_CONVERT(JSONKEY_tempSettingMax, &tempControl.cc.tempSettingMax, setStringToTemp),
         # JSON_CONVERT(JSONKEY_pidMax, &tempControl.cc.pidMax, setStringToTempDiff),
 
+        # TODO - Check if these need to flip to use convert_to_internal
         if JSONKEY_tempSettingMin in newSettings:
             self.tempControl.cc.tempSettingMin = float(newSettings[JSONKEY_tempSettingMin])
 
         if JSONKEY_tempSettingMax in newSettings:
             self.tempControl.cc.tempSettingMax = float(newSettings[JSONKEY_tempSettingMax])
+
+        if JSONKEY_pidMax in newSettings:
+            # self.tempControl.cc.pidMax = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_pidMax]), diff=True)
+            pass  # Not Implemented
 
         # JSON_CONVERT(JSONKEY_Kp, &tempControl.cc.Kp, setStringToFixedPoint),
         # JSON_CONVERT(JSONKEY_Ki, &tempControl.cc.Ki, setStringToFixedPoint),
@@ -441,25 +447,25 @@ class piLink:
         # JSON_CONVERT(JSONKEY_rotaryHalfSteps, &tempControl.cc.rotaryHalfSteps, setBool),
 
         if JSONKEY_iMaxError in newSettings:
-            self.tempControl.cc.iMaxError = float(newSettings[JSONKEY_iMaxError])
+            self.tempControl.cc.iMaxError = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_iMaxError]), diff=True)
 
         if JSONKEY_idleRangeHigh in newSettings:
-            self.tempControl.cc.idleRangeHigh = float(newSettings[JSONKEY_idleRangeHigh])
+            self.tempControl.cc.idleRangeHigh = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_idleRangeHigh]), diff=True)
 
         if JSONKEY_idleRangeLow in newSettings:
-            self.tempControl.cc.idleRangeLow = float(newSettings[JSONKEY_idleRangeLow])
+            self.tempControl.cc.idleRangeLow = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_idleRangeLow]), diff=True)
 
         if JSONKEY_heatingTargetUpper in newSettings:
-            self.tempControl.cc.heatingTargetUpper = float(newSettings[JSONKEY_heatingTargetUpper])
+            self.tempControl.cc.heatingTargetUpper = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_heatingTargetUpper]), diff=True)
 
         if JSONKEY_heatingTargetLower in newSettings:
-            self.tempControl.cc.heatingTargetLower = float(newSettings[JSONKEY_heatingTargetLower])
+            self.tempControl.cc.heatingTargetLower = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_heatingTargetLower]), diff=True)
 
         if JSONKEY_coolingTargetUpper in newSettings:
-            self.tempControl.cc.coolingTargetUpper = float(newSettings[JSONKEY_coolingTargetUpper])
+            self.tempControl.cc.coolingTargetUpper = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_coolingTargetUpper]), diff=True)
 
         if JSONKEY_coolingTargetLower in newSettings:
-            self.tempControl.cc.coolingTargetLower = float(newSettings[JSONKEY_coolingTargetLower])
+            self.tempControl.cc.coolingTargetLower = self.tempControl.temp_convert_to_internal(float(newSettings[JSONKEY_coolingTargetLower]), diff=True)
 
         if JSONKEY_maxHeatTimeForEstimate in newSettings:
             self.tempControl.cc.maxHeatTimeForEstimate = int(newSettings[JSONKEY_maxHeatTimeForEstimate])
