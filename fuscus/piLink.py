@@ -29,6 +29,7 @@ import select
 import yaml  # To get around brewpi's terse JSON
 import logging
 import termios
+import datetime
 
 import ui
 from constants import *
@@ -362,12 +363,16 @@ class piLink:
 
     def receiveJson(self):  # receive settings as JSON key:value pairs
         jsonBuf = ''
-        while 1:  # FIXME Implement a one-second timeout here
-            print("Timeout needed!")
+
+        timeout_past = datetime.datetime.now() + datetime.timedelta(seconds=1)  # 1 second timeout for receive
+
+        while 1:
             inByte = self.updateBuffer()
             jsonBuf += inByte
             if inByte == '}':
                 break
+            if datetime.datetime.now() > timeout_past:  # If this takes longer than a second, something went wrong
+                return
 
         jsonBuf = jsonBuf.replace(':', ': ')  # Fixup hacked JSON so YAML can read it
 
@@ -588,7 +593,6 @@ class piLink:
     def setTempFormat(self, val):
         # Only Celsius for now
         # TODO - Implement Fahrenheit
-
         pass
 
     #	typedef void (*JsonParserHandlerFn)(const char* val, void* target);
