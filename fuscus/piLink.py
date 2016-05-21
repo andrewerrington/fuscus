@@ -28,6 +28,7 @@ import json
 import select
 import yaml  # To get around brewpi's terse JSON
 import logging
+import termios
 
 import ui
 from constants import *
@@ -48,6 +49,12 @@ class piLink:
         # use port 25518 (beer 2 5 5 18)
         os.setegid(20)
         master, slave = pty.openpty()
+
+        # Disable echoing on slave so we don't interpret status strings as commands
+        new_settings = termios.tcgetattr(slave)
+        new_settings[3] = new_settings[3] & ~termios.ECHO
+        termios.tcsetattr(slave, termios.TCSADRAIN, new_settings)
+
         port_name = os.ttyname(slave)
         os.chmod(port_name, 0o666)
 
