@@ -317,11 +317,20 @@ class tempController:
 
         # stay idle when one of the required sensors is disconnected,
         # or the fridge setting is INVALID_TEMP
-        # FIXME: if(isDisabledOrInvalid(cs.fridgeSetting) ||
+        # if(isDisabledOrInvalid(cs.fridgeSetting) ||
         # !fridgeSensor->isConnected() ||
         # (!beerSensor->isConnected() && tempControl.modeIsBeer())):
         #	self.state = 'IDLE'
         #	stayIdle = True
+
+        # Stay idle if the fridge sensor isn't connected
+        # TODO - Make sure this didn't break beer settings/profiles
+        if not self.cs.fridgeSetting or not self.fridgeSensor.temperature:
+            self.state = STATES['IDLE']
+            stayIdle = True
+        elif not self.beerSensor.temperature and (self.cs.mode == MODES['MODE_BEER_CONSTANT'] or self.cs.mode == MODES['MODE_BEER_PROFILE']):
+            self.state = STATES['IDLE']
+            stayIdle = True
 
         sinceIdle = self.timeSinceIdle()
         sinceCooling = self.timeSinceCooling()
@@ -663,6 +672,7 @@ class tempController:
         if (newMode != self.cs.mode or self.state == STATES['WAITING_TO_HEAT']
             or self.state == STATES['WAITING_TO_COOL']
             or self.state == STATES['WAITING_FOR_PEAK_DETECT']):
+
             self.state = STATES['IDLE']
             force = True
 
@@ -693,6 +703,7 @@ class tempController:
         return self.cs.fridgeSetting
 
     def setBeerTemp(self, newTemp):
+        newTemp = self.temp_convert_to_internal(newTemp)  # In case we're in Fahrenheit
         oldBeerSetting = self.cs.beerSetting
         self.cs.beerSetting = newTemp
         if (oldBeerSetting is None or (
@@ -712,6 +723,7 @@ class tempController:
 
 
     def setFridgeTemp(self, newTemp):
+        newTemp = self.temp_convert_to_internal(newTemp)  # In case we're in Fahrenheit
         self.cs.fridgeSetting = newTemp
         self.reset()  # reset peak detection and PID
         self.updatePID()
@@ -754,3 +766,35 @@ class tempController:
 
     def getDisplayState(self):
         return STATES['DOOR_OPEN'] if self.isDoorOpen() else self.getState()
+
+    # Convert celsius to fahrenheit, and vice versa
+    def temp_convert(self, temp, original_units, desired_units):
+        if original_units == desired_units:
+            return temp
+
+        if original_units == "C" and desired_units == "F":
+            return temp * 1.8 + 32
+        elif original_units == "F" and desired_units == "C":
+            return (temp - 32) / 1.8
+        else:
+            logging.error("Invalid units passed to temp_convert. Orig: {}, Desired: {}".format(original_units,
+                                                                                               desired_units))
+            return None  # Should probably return something other than none, or raise an error.
+
+    # Converts a temperature to the external value (C or F)
+    def temp_convert_to_external(self, temp):
+        if temp:
+            return self.temp_convert(temp, "C", self.cc.tempFormat)
+        return temp  # Returns None if that's what we were passed
+
+    # Converts a temperature to the internal value (C)
+    def temp_convert_to_internal(self, temp):
+        if temp:
+            return self.temp_convert(temp, self.cc.tempFormat, "C")
+        return temp  # Returns None if that's what we were passed
+
+    # When we convert from C to F (or vice versa) we need to convert all the control variables
+    def setTempFormat(self, new_format):
+        # The controller always does everything in celsius internally. All that setting it to Fahrenheit mode does
+        # is change the units it uses when communicating with BrewPi
+        self.cc.tempFormat = new_format

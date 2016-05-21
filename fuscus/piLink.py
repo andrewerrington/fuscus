@@ -265,14 +265,14 @@ class piLink:
         # define JSON_TIME               "Time"
         # define JSON_ROOM_TEMP  "RoomTemp"
 
-        temps['BeerTemp'] = self.tempControl.getBeerTemp()
-        temps['BeerSet'] = self.tempControl.getBeerSetting()
+        temps['BeerTemp'] = self.tempControl.temp_convert_to_external(self.tempControl.getBeerTemp())
+        temps['BeerSet'] = self.tempControl.temp_convert_to_external(self.tempControl.getBeerSetting())
         temps['BeerAnn'] = beerAnnotation
-        temps['FridgeTemp'] = self.tempControl.getFridgeTemp()
-        temps['FridgeSet'] = self.tempControl.getFridgeSetting()
+        temps['FridgeTemp'] = self.tempControl.temp_convert_to_external(self.tempControl.getFridgeTemp())
+        temps['FridgeSet'] = self.tempControl.temp_convert_to_external(self.tempControl.getFridgeSetting())
         temps['FridgeAnn'] = fridgeAnnotation
 
-        t = self.tempControl.getRoomTemp()  # Room temp sensor may not be present
+        t = self.tempControl.temp_convert_to_external(self.tempControl.getRoomTemp())  # Room temp sensor may not be present
         if t:
             temps['RoomTemp'] = t
 
@@ -315,8 +315,8 @@ class piLink:
     def sendControlSettings(self, cs):
         d = vars(cs).copy()
         # Fix up the key names that are not the same
-        d[JSONKEY_beerSetting] = d.pop('beerSetting')
-        d[JSONKEY_fridgeSetting] = d.pop('fridgeSetting')
+        d[JSONKEY_beerSetting] = self.tempControl.temp_convert_to_external(d.pop('beerSetting'))
+        d[JSONKEY_fridgeSetting] = self.tempControl.temp_convert_to_external(d.pop('fridgeSetting'))
         d[JSONKEY_heatEstimator] = d.pop('heatEstimator')
         d[JSONKEY_coolEstimator] = d.pop('coolEstimator')
 
@@ -325,8 +325,8 @@ class piLink:
     def sendControlConstants(self, cc):
         d = vars(cc).copy()
         # Fix up the key names that are not the same
-        d[JSONKEY_tempSettingMin] = d.pop('tempSettingMin')
-        d[JSONKEY_tempSettingMax] = d.pop('tempSettingMax')
+        d[JSONKEY_tempSettingMin] = self.tempControl.temp_convert_to_external(d.pop('tempSettingMin'))
+        d[JSONKEY_tempSettingMax] = self.tempControl.temp_convert_to_external(d.pop('tempSettingMax'))
         d[JSONKEY_iMaxError] = d.pop('iMaxError')
         d[JSONKEY_idleRangeHigh] = d.pop('idleRangeHigh')
 
@@ -364,14 +364,14 @@ class piLink:
     def receiveJson(self):  # receive settings as JSON key:value pairs
         jsonBuf = ''
 
-        timeout_past = datetime.datetime.now() + datetime.timedelta(seconds=1)  # 1 second timeout for receive
+        timeout_after = datetime.datetime.now() + datetime.timedelta(seconds=1)  # 1 second timeout for receive
 
         while 1:
             inByte = self.updateBuffer()
             jsonBuf += inByte
             if inByte == '}':
                 break
-            if datetime.datetime.now() > timeout_past:  # If this takes longer than a second, something went wrong
+            if datetime.datetime.now() > timeout_after:  # If this takes longer than a second, something went wrong
                 return
 
         jsonBuf = jsonBuf.replace(':', ': ')  # Fixup hacked JSON so YAML can read it
@@ -593,6 +593,7 @@ class piLink:
     def setTempFormat(self, val):
         # Only Celsius for now
         # TODO - Implement Fahrenheit
+        self.tempControl.setTempFormat(val)
         pass
 
     #	typedef void (*JsonParserHandlerFn)(const char* val, void* target);
