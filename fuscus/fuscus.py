@@ -2,6 +2,7 @@
 """Main program for BrewPi Fuscus temperature controller."""
 
 import logging
+
 logging.basicConfig(filename='fuscus.log', level=logging.DEBUG)
 
 #
@@ -28,10 +29,10 @@ logging.basicConfig(filename='fuscus.log', level=logging.DEBUG)
 import time
 import signal
 
-import AppConfigDefault # FIXME is this needed?
+import AppConfigDefault  # FIXME is this needed?
 
-#import piLink
-#piLink = piLink.piLink()
+# import piLink
+# piLink = piLink.piLink()
 
 import ui
 
@@ -42,112 +43,114 @@ from constants import *
 
 keepRunning = True
 
-#ValueActuator alarm;
-#UI ui;
+
+# ValueActuator alarm;
+# UI ui;
 
 
 def killhandle(signum, frame):
-	'''Handle shutdown cleanly by stopping main loop.'''
-	global keepRunning
-	if signum == signal.SIGINT:
-		print("SIGINT detected.  Main loop will stop.")
-		keepRunning = False
-	elif signum == signal.SIGTERM:
-		print("SIGTERM detected.  Main loop will stop.")
-		keepRunning = False
+    '''Handle shutdown cleanly by stopping main loop.'''
+    global keepRunning
+    if signum == signal.SIGINT:
+        print("SIGINT detected.  Main loop will stop.")
+        keepRunning = False
+    elif signum == signal.SIGTERM:
+        print("SIGTERM detected.  Main loop will stop.")
+        keepRunning = False
 
 
 def setup():
-	#resetEeprom = platform_init()	# FIXME: not implemented
-    #eepromManager.init()	# FIXME: not implemented
-    #ui.init()
-	#f,portName=piLink.init()
-	print("started")
-	logging.debug("started")
-	#tempControl.init()
-	#settingsManager.loadSettings()	# FIXME No settings manager
-	# FIXME The next two lines are temporary code to make things work.
-	# They should be done by the settings manager.
-	tempControl.loadDefaultSettings()
-	tempControl.loadDefaultConstants()
+    # resetEeprom = platform_init()	# FIXME: not implemented
+    # eepromManager.init()	# FIXME: not implemented
+    # ui.init()
+    # f,portName=piLink.init()
+    print("started")
+    logging.debug("started")
+    # tempControl.init()
+    # settingsManager.loadSettings()	# FIXME No settings manager
+    # FIXME The next two lines are temporary code to make things work.
+    # They should be done by the settings manager.
+    tempControl.loadDefaultSettings()
+    tempControl.loadDefaultConstants()
 
-	start = time.time()
-	delay = ui.showStartupPage(piLink.portName)
-	while (time.time()-start <= delay):
-		ui.ticks()
-	
-	ui.showControllerPage()
+    start = time.time()
+    delay = ui.showStartupPage(piLink.portName)
+    while (time.time() - start <= delay):
+        ui.ticks()
 
-	logging.debug("init complete")
-	print("init complete")
+    ui.showControllerPage()
+
+    logging.debug("init complete")
+    print("init complete")
 
 
 def loop():
-	'''Main loop.'''
-	lastUpdate = -1	# initialise at -1 to update immediately
+    '''Main loop.'''
+    lastUpdate = -1  # initialise at -1 to update immediately
 
-	oldState = None
+    oldState = None
 
-	spinner = '|/-\\'
-	spinindex = 0
+    spinner = '|/-\\'
+    spinindex = 0
 
-	while keepRunning:
-		ui.ticks()
-		if (time.time() - lastUpdate >= 1.0): # update settings every second
-			# round to nearest 1 second boundary to keep in sync with real time	
-			lastUpdate = round(time.time())
+    while keepRunning:
+        ui.ticks()
+        if (time.time() - lastUpdate >= 1.0):  # update settings every second
+            # round to nearest 1 second boundary to keep in sync with real time
+            lastUpdate = round(time.time())
 
-			tempControl.updateTemperatures()
-			tempControl.detectPeaks()
-			tempControl.updatePID()
-			oldState = tempControl.getState()
-			tempControl.updateState()
+            tempControl.updateTemperatures()
+            tempControl.detectPeaks()
+            tempControl.updatePID()
+            oldState = tempControl.getState()
+            tempControl.updateState()
 
-			if (oldState != tempControl.getState()):
-				print("State changed from %s to %s"%(oldState, tempControl.getState()))
-				piLink.printTemperatures()	# add a data point at every state transition
-			
-			tempControl.updateOutputs()
-			ui.update()
+            if (oldState != tempControl.getState()):
+                print("State changed from %s to %s" % (oldState, tempControl.getState()))
+                piLink.printTemperatures()  # add a data point at every state transition
 
-			# We have two lines free at the bottom of the display.
+            tempControl.updateOutputs()
+            ui.update()
 
-			# Show local time YYYY-MM-DD hh:mm (16 characters.)
-			ui.LCD.printat(0, 5, time.strftime("%Y-%m-%d %H:%M")) 
+            # We have two lines free at the bottom of the display.
 
-			# Last character is a spinner to show we haven't crashed
-			ui.LCD.print("%s"%spinner[spinindex])
-			spinindex = (spinindex + 1) % 4
+            # Show local time YYYY-MM-DD hh:mm (16 characters.)
+            ui.LCD.printat(0, 5, time.strftime("%Y-%m-%d %H:%M"))
 
-		#listen for incoming serial connections while waiting to update
-		piLink.receive()
+            # Last character is a spinner to show we haven't crashed
+            ui.LCD.print("%s" % spinner[spinindex])
+            spinindex = (spinindex + 1) % 4
 
-		time.sleep(0.05) # Don't hog the processor
+        # listen for incoming serial connections while waiting to update
+        piLink.receive()
 
-	piLink.cleanup()
-	ui.LCD.printat(0, 5, "Shutting down.   ")
-	ui.update()
+        time.sleep(0.05)  # Don't hog the processor
+
+    piLink.cleanup()
+    ui.LCD.printat(0, 5, "Shutting down.   ")
+    ui.update()
 
 
 if __name__ == "__main__":
-	import RPi.GPIO as GPIO
-	logging.info('Started')
-	signal.signal(signal.SIGTERM, killhandle)
-	signal.signal(signal.SIGINT, killhandle)
-	setup()
-	loop()	# loop() will exit if we get one of the above signals
-	heater.off()
-	cooler.off()
-	print("Stopping threads")
-	tempControl.beerSensor.stop()
-	tempControl.ambientSensor.stop()
-	tempControl.fridgeSensor.stop()
-	encoder.stop()
-	print("Waiting for threads to finish.")
-	tempControl.beerSensor.join()
-	tempControl.ambientSensor.join()
-	tempControl.fridgeSensor.join()
-	encoder.join()
-	GPIO.cleanup()
-	print("Finished")
-	logging.info('Finished')
+    import RPi.GPIO as GPIO
+
+    logging.info('Started')
+    signal.signal(signal.SIGTERM, killhandle)
+    signal.signal(signal.SIGINT, killhandle)
+    setup()
+    loop()  # loop() will exit if we get one of the above signals
+    heater.off()
+    cooler.off()
+    print("Stopping threads")
+    tempControl.beerSensor.stop()
+    tempControl.ambientSensor.stop()
+    tempControl.fridgeSensor.stop()
+    encoder.stop()
+    print("Waiting for threads to finish.")
+    tempControl.beerSensor.join()
+    tempControl.ambientSensor.join()
+    tempControl.fridgeSensor.join()
+    encoder.join()
+    GPIO.cleanup()
+    print("Finished")
+    logging.info('Finished')

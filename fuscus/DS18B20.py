@@ -22,131 +22,130 @@
 import threading
 import time
 
-
 # How many times to try reading a stuck sensor before giving up.
 RETRY_LIMIT = 10
 
+
 class DS18B20(threading.Thread):
-	"""Threaded class to read DS18B20 sensor.
-	
-	You can read .temperature as often as you like, but it's only updated
-	every samplePeriod seconds (and the driver takes about 800ms to return
-	a value).
-	Return value is a float, temperature in degrees C,
-	or None if the sensor can not be read.
-	
-	A special deviceID of None is allowed.  This deviceID will always
-	return a temperature of None.
-	"""
+    """Threaded class to read DS18B20 sensor.
 
-	def __init__(self, deviceID, samplePeriod = 1):
-		"""deviceID is the 1-wire address.  samplePeriod is in seconds."""
-		threading.Thread.__init__(self)
+    You can read .temperature as often as you like, but it's only updated
+    every samplePeriod seconds (and the driver takes about 800ms to return
+    a value).
+    Return value is a float, temperature in degrees C,
+    or None if the sensor can not be read.
 
-		self.deviceID = deviceID
+    A special deviceID of None is allowed.  This deviceID will always
+    return a temperature of None.
+    """
 
-		self.samplePeriod = samplePeriod
-		
-		# Initialise temperature to None, meaning no reading is available
-		self.temperature = None
+    def __init__(self, deviceID, samplePeriod=1):
+        """deviceID is the 1-wire address.  samplePeriod is in seconds."""
+        threading.Thread.__init__(self)
 
-		self.running = False
+        self.deviceID = deviceID
 
+        self.samplePeriod = samplePeriod
 
-	def run(self):
+        # Initialise temperature to None, meaning no reading is available
+        self.temperature = None
 
-		self.running = True
+        self.running = False
 
-		while (self.running):
-			# update temperature every time around this loop
+    def run(self):
 
-			retries = 0	# Sometimes the sensor gets 'stuck'
+        self.running = True
 
-			temperature = None	# Default temperature until we get a new one
+        while (self.running):
+            # update temperature every time around this loop
 
-			# If deviceID is None, don't bother reading it.
-			while self.deviceID is not None:
-				# Attempt to read the sensor, and deal with common errors.
+            retries = 0  # Sometimes the sensor gets 'stuck'
 
-				filename =  "/sys/bus/w1/devices/%s/w1_slave"%self.deviceID
+            temperature = None  # Default temperature until we get a new one
 
-				try:
-					tfile = open(filename)
-					text = tfile.read()
-					tfile.close
-				except: 
-					print("Could not open '%s'"%filename)
-					break
+            # If deviceID is None, don't bother reading it.
+            while self.deviceID is not None:
+                # Attempt to read the sensor, and deal with common errors.
 
-				if text.split("\n")[0][-3:] == "YES":
-					# New data is available.  Extract it from the string.
-					new_temperature = float(text.split("\n")[1].split(" ")[9][2:])/1000
-				else:
-					# Reading the sensor did not return "YES".
-					# Let's try again a few times.
-					print("Sensor '%s' did not return 'YES'"%self.deviceID)
-					print("Sensor returned '%s'"%text)
-					if retries < RETRY_LIMIT:
-						retries += 1
-						print("Re-reading '%s'.  Attempt %s of %s."%(self.deviceID, retries, RETRY_LIMIT))
-						continue
-					else:
-						print("Sensor '%s' did not return 'YES' after %s retries.  Giving up."%(self.deviceID,RETRY_LIMIT))
-						break
+                filename = "/sys/bus/w1/devices/%s/w1_slave" % self.deviceID
 
-				if new_temperature == 85.0:
-					# A common error condition.  If your application
-					# encounters this temperature genuinely in your
-					# environment consider removing this test.
-					if retries < RETRY_LIMIT:
-						retries += 1
-						print("Discarding 85.0 reading.  Re-reading '%s'.  Attempt %s of %s."%(self.deviceID, retries, RETRY_LIMIT))
-						continue
-					else:
-						print("Sensor '%s' stuck on 85.0 after %s retries.  Giving up."%(self.deviceID,RETRY_LIMIT))
-						break
-				else:
-					# new temperature is acceptable
-					temperature = new_temperature
+                try:
+                    tfile = open(filename)
+                    text = tfile.read()
+                    tfile.close
+                except:
+                    print("Could not open '%s'" % filename)
+                    break
 
-				break
+                if text.split("\n")[0][-3:] == "YES":
+                    # New data is available.  Extract it from the string.
+                    new_temperature = float(text.split("\n")[1].split(" ")[9][2:]) / 1000
+                else:
+                    # Reading the sensor did not return "YES".
+                    # Let's try again a few times.
+                    print("Sensor '%s' did not return 'YES'" % self.deviceID)
+                    print("Sensor returned '%s'" % text)
+                    if retries < RETRY_LIMIT:
+                        retries += 1
+                        print("Re-reading '%s'.  Attempt %s of %s." % (self.deviceID, retries, RETRY_LIMIT))
+                        continue
+                    else:
+                        print("Sensor '%s' did not return 'YES' after %s retries.  Giving up." % (
+                        self.deviceID, RETRY_LIMIT))
+                        break
 
-			self.temperature = temperature
-			time.sleep(self.samplePeriod)
+                if new_temperature == 85.0:
+                    # A common error condition.  If your application
+                    # encounters this temperature genuinely in your
+                    # environment consider removing this test.
+                    if retries < RETRY_LIMIT:
+                        retries += 1
+                        print("Discarding 85.0 reading.  Re-reading '%s'.  Attempt %s of %s." % (
+                        self.deviceID, retries, RETRY_LIMIT))
+                        continue
+                    else:
+                        print("Sensor '%s' stuck on 85.0 after %s retries.  Giving up." % (self.deviceID, RETRY_LIMIT))
+                        break
+                else:
+                    # new temperature is acceptable
+                    temperature = new_temperature
 
+                break
 
-	def stop(self):
-		self.running = False
+            self.temperature = temperature
+            time.sleep(self.samplePeriod)
 
+    def stop(self):
+        self.running = False
 
 
 if __name__ == "__main__":
 
-	# Simple test code.  A sensor must be present,
-	# and the W1 driver must be working
-	tempsensor = DS18B20("28-0315535f7bff") # Insert your device ID here
+    # Simple test code.  A sensor must be present,
+    # and the W1 driver must be working
+    tempsensor = DS18B20("28-0315535f7bff")  # Insert your device ID here
 
-	try:
-		print("Starting %s"%tempsensor.deviceID)
-		tempsensor.start()
+    try:
+        print("Starting %s" % tempsensor.deviceID)
+        tempsensor.start()
 
-		while(True):
-			time.sleep(1) 	# You can read the sensor as often as you like,
-							# but it only changes every samplePeriod seconds.
-			print(tempsensor.temperature)	# Result is float in degrees C,
-											# or None for error
+        while (True):
+            time.sleep(1)  # You can read the sensor as often as you like,
+            # but it only changes every samplePeriod seconds.
+            print(tempsensor.temperature)  # Result is float in degrees C,
+        # or None for error
 
-	except KeyboardInterrupt:
-		print("Ctrl-C")
+    except KeyboardInterrupt:
+        print("Ctrl-C")
 
-	except:
-		print("Temperature sensor error:", sys.exc_info()[0])
-		raise
+    except:
+        print("Temperature sensor error:", sys.exc_info()[0])
+        raise
 
-	finally:
-		print("Stopping %s"%tempsensor.deviceID)
-		tempsensor.stop()
-		print("Waiting for %s to finish."%tempsensor.deviceID)
-		tempsensor.join()
-	
-	print("Done")
+    finally:
+        print("Stopping %s" % tempsensor.deviceID)
+        tempsensor.stop()
+        print("Waiting for %s to finish." % tempsensor.deviceID)
+        tempsensor.join()
+
+    print("Done")

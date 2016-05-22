@@ -35,55 +35,48 @@ import FilterFixed
 
 
 class CascadedFilter:
-	"""CascadedFilter implements a filter consisting of multiple second order sections."""
+    """CascadedFilter implements a filter consisting of multiple second order sections."""
 
-	def __init__(self, NUM_SECTIONS = 3):
-		self.NUM_SECTIONS = NUM_SECTIONS
-		self.sections = []
-		for i in range(self.NUM_SECTIONS):
-			self.sections.append(FilterFixed.FixedFilter(b=2))
+    def __init__(self, NUM_SECTIONS=3):
+        self.NUM_SECTIONS = NUM_SECTIONS
+        self.sections = []
+        for i in range(self.NUM_SECTIONS):
+            self.sections.append(FilterFixed.FixedFilter(b=2))
 
+    def setCoefficients(self, bValue):
+        for section in self.sections:
+            section.setCoefficients(bValue)
 
-	def setCoefficients(self, bValue):
-		for section in self.sections:
-			section.setCoefficients(bValue)
+    def init(self, val):
+        for section in self.sections:
+            section.init(val)
 
+    def add(self, val):
+        # adds a value and returns the most recent filter output
+        # val is input for next section, which is the output of the previous section
+        # Internally we use Decimal, but other callers expect float.
+        val = Decimal(val)
+        for section in self.sections:
+            val = section.add(val)
 
-	def init(self, val):
-		for section in self.sections:
-			section.init(val)
+        return float(val)
 
+    def readInput(self):
+        """Returns the most recent filter input."""
+        return self.sections[0].readInput()  # return input of first section
 
-	def add(self, val):
-		# adds a value and returns the most recent filter output
-		# val is input for next section, which is the output of the previous section
-		# Internally we use Decimal, but other callers expect float.
-		val = Decimal(val) 
-		for section in self.sections:
-			val = section.add(val)
-			
-		return float(val)
+    def readOutput(self):
+        """Return output of last section."""
+        return self.sections[-1].readOutput()
 
+    def readPrevOutput(self):
+        """Return previous output of last section."""
+        return self.sections[-1].readPrevOutput()
 
-	def readInput(self):
-		"""Returns the most recent filter input."""
-		return self.sections[0].readInput()	# return input of first section
+    def detectPosPeak(self):
+        """Detect peaks in last section."""
+        return self.sections[-1].detectPosPeak()
 
-
-	def readOutput(self):
-		"""Return output of last section."""
-		return self.sections[-1].readOutput() 
-
-	def readPrevOutput(self):
-		"""Return previous output of last section."""
-		return self.sections[-1].readPrevOutput() 
-
-
-	def detectPosPeak(self):
-		"""Detect peaks in last section."""
-		return self.sections[-1].detectPosPeak()
-
-
-	def detectNegPeak(self):
-		"""Detect peaks in last section."""
-		return self.sections[-1].detectNegPeak()
+    def detectNegPeak(self):
+        """Detect peaks in last section."""
+        return self.sections[-1].detectNegPeak()
