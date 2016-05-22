@@ -44,7 +44,7 @@ LCD_FLAG_DISPLAY_ROOM = 0x01
 LCD_FLAG_ALTERNATE_ROOM = 0x02
 
 # Variables.  #FIXME consider making a class, with these as class variables
-flags = LCD_FLAG_ALTERNATE_ROOM
+flags = LCD_FLAG_ALTERNATE_ROOM  # TODO - Change this so that it disables if room sensor is None
 stateOnDisplay = None
 
 
@@ -208,21 +208,21 @@ def printAllTemperatures():
 
 
 def printBeerTemp():
-	printTemperatureAt(6, 1, tempControl.getBeerTemp())
+	printTemperatureAt(6, 1, tempControl.temp_convert_to_external(tempControl.getBeerTemp()))
 
 
 def printBeerSet():
-	printTemperatureAt(12, 1, tempControl.getBeerSetting())
+	printTemperatureAt(12, 1, tempControl.temp_convert_to_external(tempControl.getBeerSetting()))
 
 
 def printFridgeTemp():
-	printTemperatureAt(6,2, tempControl.ambientSensor.temperature
+	printTemperatureAt(6,2, tempControl.temp_convert_to_external(tempControl.ambientSensor.temperature)
 					if (flags & LCD_FLAG_DISPLAY_ROOM)
-					else tempControl.getFridgeTemp())
+					else tempControl.temp_convert_to_external(tempControl.getFridgeTemp()))
 
 
 def printFridgeSet():
-	fridgeSet = tempControl.getFridgeSetting()
+	fridgeSet = tempControl.temp_convert_to_external(tempControl.getFridgeSetting())
 	if (flags & LCD_FLAG_DISPLAY_ROOM):	# beer setting is not active
 		fridgeSet = None
 	printTemperatureAt(12, 2, fridgeSet)

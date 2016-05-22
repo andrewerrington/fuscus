@@ -39,7 +39,8 @@ https://github.com/bewest/decoding-carelink/pull/171
 
 Note that you can run fuscus in a *screen* session for experimenting, or
 you can add the command to start fuscus to the fuscus user's crontab in
-a *@reboot* entry.  
+a *@reboot* entry.  An example @reboot entry which discards normal output and logs everything sent to stderr is:
+*@reboot sudo /<path to fuscus>/fuscus.py -c /<path to fuscus>/fuscus.ini 1>/dev/null 2>>/home/fuscus/stderr.txt &*
 
 When fuscus is running it will listen on /dev/fuscus for a connection
 from BrewPi.  BrewPi will attempt to connect every minute.  This means
@@ -57,4 +58,6 @@ Change the port variable in the config.cfg file from this:
 port = /dev/ttyACM0
 to
 port = socket://localhost:25518
+
+Fully test the Fahrenheit conversion code to ensure that it works properly with beer profiles
 
