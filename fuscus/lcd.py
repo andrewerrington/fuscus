@@ -20,47 +20,48 @@
 #
 
 class lcd:
-	"""Buffer LCD text and control LCD hardware."""
-	def __init__(self, lines=4, chars=20, hardware=None):
-		print("lcd object %s x %s created"%(lines, chars))
-		self.lines = lines
-		self.chars = chars
-		self.clear()
-		self.hardware = hardware
+    """Buffer LCD text and control LCD hardware."""
 
-	def print(self, txt):
-		self.buffer[self.y] = self.buffer[self.y][:self.x] + txt + self.buffer[self.y][self.x+len(txt):]
-		self.buffer[self.y] = self.buffer[self.y][:self.chars]
-		self.x += len(txt)
+    def __init__(self, lines=4, chars=20, hardware=None):
+        print("lcd object %s x %s created" % (lines, chars))
+        self.lines = lines
+        self.chars = chars
+        self.clear()
+        self.hardware = hardware
 
-	def println(self, txt):
-		self.print(txt)
-		self.y = (self.y+1)%self.lines
-		self.x = 0
+    def print(self, txt):
+        self.buffer[self.y] = self.buffer[self.y][:self.x] + txt + self.buffer[self.y][self.x + len(txt):]
+        self.buffer[self.y] = self.buffer[self.y][:self.chars]
+        self.x += len(txt)
 
-	def printat(self, x, y, txt):
-		self.cursor(x, y)
-		self.print(txt)
+    def println(self, txt):
+        self.print(txt)
+        self.y = (self.y + 1) % self.lines
+        self.x = 0
 
-	def clear(self):
-		self.buffer = [' '*self.chars]*self.lines
-		self.x = 0
-		self.y = 0
+    def printat(self, x, y, txt):
+        self.cursor(x, y)
+        self.print(txt)
 
-	def cursor(self, x, y):
-		self.x = x
-		self.y = y
+    def clear(self):
+        self.buffer = [' ' * self.chars] * self.lines
+        self.x = 0
+        self.y = 0
 
-	def tab(self, x):
-		self.x = x
+    def cursor(self, x, y):
+        self.x = x
+        self.y = y
 
-	# The following functions call the actual hardware functions
-	def update(self):
-		print("Copy buffer to LCD hardware")
-		print(self.buffer)
-		if self.hardware is not None:
-			self.hardware.copy_to_display(self.buffer)
+    def tab(self, x):
+        self.x = x
 
-	def backlight(self, percent):
-		if self.hardware is not None:
-			self.hardware.backlight(percent)
+    # The following functions call the actual hardware functions
+    def update(self):
+        print("Copy buffer to LCD hardware")
+        print(self.buffer)
+        if self.hardware is not None:
+            self.hardware.copy_to_display(self.buffer)
+
+    def backlight(self, percent):
+        if self.hardware is not None:
+            self.hardware.backlight(percent)
