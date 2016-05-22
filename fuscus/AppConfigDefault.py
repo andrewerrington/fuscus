@@ -19,29 +19,29 @@
 */
 #pragma once'''
 # Enable printing debug only log messages and debug only wrapped statements
-BREWPI_DEBUG=0
+BREWPI_DEBUG = 0
 # Set which debug messages are printed
-BREWPI_LOG_ERRORS=1
-BREWPI_LOG_WARNINGS=1
-BREWPI_LOG_INFO=1
-BREWPI_LOG_DEBUG=0
+BREWPI_LOG_ERRORS = 1
+BREWPI_LOG_WARNINGS = 1
+BREWPI_LOG_INFO = 1
+BREWPI_LOG_DEBUG = 0
 
 # This flag virtualizes as much of the hardware as possible, so the code can be run in the AvrStudio simulator, which
 # only emulates the microcontroller, not any attached peripherals.
 
-BREWPI_EMULATE=0
+BREWPI_EMULATE = 0
 
-TEMP_SENSOR_CASCADED_FILTER=1
-TEMP_CONTROL_STATIC=1
+TEMP_SENSOR_CASCADED_FILTER = 1
+TEMP_CONTROL_STATIC = 1
 
 # Enable the simulator. Real sensors/actuators are replaced with simulated versions. In particular, the values reported by
 # temp sensors are based on a model of the fridge/beer.
 
-BREWPI_SIMULATE=0
-BREWPI_EEPROM_HELPER_COMMANDS=BREWPI_DEBUG or BREWPI_SIMULATE
-OPTIMIZE_GLOBAL=1
-BUILD_NAME='Python'
+BREWPI_SIMULATE = 0
+BREWPI_EEPROM_HELPER_COMMANDS = BREWPI_DEBUG or BREWPI_SIMULATE
+OPTIMIZE_GLOBAL = 1
+BUILD_NAME = 'Python'
 
 # Enable the LCD menu.
-BREWPI_MENU=1
-DISPLAY_TIME_HMS=1
+BREWPI_MENU = 1
+DISPLAY_TIME_HMS = 1

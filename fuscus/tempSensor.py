@@ -27,6 +27,7 @@ import FilterCascaded
 import time
 import logging
 
+
 # tempSensor class for BrewPi
 # Subclassed from DS18B20, which is a general purpose threaded class
 # for reading DS18B20 one-wire temperature sensors.
@@ -34,124 +35,109 @@ import logging
 # This class adds filtering and other functions to the sensor.
 
 class sensor(DS18B20):
+    def __init__(self, deviceID):
 
-	def __init__(self,deviceID):
-	
-		super().__init__(deviceID, samplePeriod = 1)
+        super().__init__(deviceID, samplePeriod=1)
 
-		self.deviceID = deviceID
+        self.deviceID = deviceID
 
-		self.start()
+        self.start()
 
-		# An indication of how stale the data is in the filters
-		# Each time a read fails, this value is incremented.
-		# It's used to reset the filters after a large enough disconnect
-		# delay, and on the first init.
+        # An indication of how stale the data is in the filters
+        # Each time a read fails, this value is incremented.
+        # It's used to reset the filters after a large enough disconnect
+        # delay, and on the first init.
 
-		self.failedReadCount=255
-		self.updateCounter=255
+        self.failedReadCount = 255
+        self.updateCounter = 255
 
-		self.fastFilter=FilterCascaded.CascadedFilter()
-		self.slowFilter=FilterCascaded.CascadedFilter()
-		self.slopeFilter=FilterCascaded.CascadedFilter()
-		self.prevOutputForSlope=None
+        self.fastFilter = FilterCascaded.CascadedFilter()
+        self.slowFilter = FilterCascaded.CascadedFilter()
+        self.slopeFilter = FilterCascaded.CascadedFilter()
+        self.prevOutputForSlope = None
 
-		time.sleep(1)	# Wait for at least one reading to be ready.
+        time.sleep(1)  # Wait for at least one reading to be ready.
 
-	
-	def isConnected(self):
-		return self.deviceID is not None
+    def isConnected(self):
+        return self.deviceID is not None
 
+    def init(self):
+        logging.debug("tempsensor::init - begin %d", self.failedReadCount);
+        # if (_sensor && _sensor->init() && failedReadCount>60) {
+        if (self.failedReadCount > 60):
+            temp = self.temperature
+            if (temp is not None):
+                logging.debug("initializing filters with value %d", temp)
+                self.fastFilter.init(temp)
+                self.slowFilter.init(temp)
+                self.slopeFilter.init(0)
+                self.prevOutputForSlope = self.slowFilter.readOutput()
+                self.failedReadCount = 0
 
-	def init(self):
-		logging.debug("tempsensor::init - begin %d", self.failedReadCount);
-		#if (_sensor && _sensor->init() && failedReadCount>60) {
-		if (self.failedReadCount>60):
-			temp = self.temperature
-			if (temp is not None):
-				logging.debug("initializing filters with value %d", temp)
-				self.fastFilter.init(temp)
-				self.slowFilter.init(temp)
-				self.slopeFilter.init(0)
-				self.prevOutputForSlope = self.slowFilter.readOutput()
-				self.failedReadCount = 0
+    def update(self):
+        # if (!_sensor || (temp=_sensor->read())==TEMP_SENSOR_DISCONNECTED) {
+        temp = self.temperature
+        if (temp is None):
+            if (self.failedReadCount < 255):  # limit
+                self.failedReadCount += 1
+            return
 
+        self.fastFilter.add(temp)
+        self.slowFilter.add(temp)
+        # update slope filter every 3 samples.
+        # averaged differences will give the slope. Use the slow filter as input
+        self.updateCounter -= 1
+        # initialize first read for slope filter after (255-4) seconds. This
+        # prevents an influence for the startup inaccuracy.
+        if (self.updateCounter == 4):
+            # only happens once after startup.
+            self.prevOutputForSlope = self.slowFilter.readOutput()
 
-	def update(self):
-		#if (!_sensor || (temp=_sensor->read())==TEMP_SENSOR_DISCONNECTED) {
-		temp=self.temperature
-		if (temp is None):
-			if(self.failedReadCount < 255):	# limit
-				self.failedReadCount+=1
-			return
+        if (self.updateCounter <= 0):
+            slowFilterOutput = self.slowFilter.readOutput()
+            diff = slowFilterOutput - self.prevOutputForSlope
+            # diff_upper = diff >> 16
+            # if(diff_upper > 27){ // limit to prevent overflow INT_MAX/1200 = 27.14
+            #	diff = (27l << 16);
+            # }
+            # else if(diff_upper < -27){
+            #	diff = (-27l << 16);
+            # }
 
-		self.fastFilter.add(temp)
-		self.slowFilter.add(temp)
-		# update slope filter every 3 samples.
-		# averaged differences will give the slope. Use the slow filter as input
-		self.updateCounter-=1
-		# initialize first read for slope filter after (255-4) seconds. This
-		# prevents an influence for the startup inaccuracy.
-		if(self.updateCounter == 4):
-			# only happens once after startup.
-			self.prevOutputForSlope = self.slowFilter.readOutput()
-	
-		if(self.updateCounter <= 0):
-			slowFilterOutput = self.slowFilter.readOutput()
-			diff = slowFilterOutput - self.prevOutputForSlope
-			#diff_upper = diff >> 16
-			#if(diff_upper > 27){ // limit to prevent overflow INT_MAX/1200 = 27.14
-			#	diff = (27l << 16);
-			#}
-			#else if(diff_upper < -27){
-			#	diff = (-27l << 16);
-			#}
-			
-			self.slopeFilter.add(1200*diff)	# Multiply by 1200 (1h/4s), shift to single precision
-			self.prevOutputForSlope = slowFilterOutput
-			self.updateCounter = 3
+            self.slopeFilter.add(1200 * diff)  # Multiply by 1200 (1h/4s), shift to single precision
+            self.prevOutputForSlope = slowFilterOutput
+            self.updateCounter = 3
 
+    def readFastFiltered(self):
+        return self.fastFilter.readOutput()  # return most recent unfiltered value
 
-	def readFastFiltered(self):
-		return self.fastFilter.readOutput()	#return most recent unfiltered value
+    def readSlowFiltered(self):
+        return self.slowFilter.readOutput()  # return most recent unfiltered value
 
+    def readSlope(self):
+        """Return slope per hour."""
+        return self.slopeFilter.readOutput()
 
-	def readSlowFiltered(self):
-		return self.slowFilter.readOutput()	#return most recent unfiltered value
+    def detectPosPeak(self):
+        return self.slowFilter.detectPosPeak()
 
+    def detectNegPeak(self):
+        return self.slowFilter.detectNegPeak()
 
-	def readSlope(self):
-		"""Return slope per hour."""
-		return self.slopeFilter.readOutput()
+    def setFastFilterCoefficients(self, b):
+        self.fastFilter.setCoefficients(b)
 
+    def setSlowFilterCoefficients(self, b):
+        self.slowFilter.setCoefficients(b)
 
-	def detectPosPeak(self):
-		return self.slowFilter.detectPosPeak()
+    def setSlopeFilterCoefficients(self, b):
+        self.slopeFilter.setCoefficients(b)
 
+    def hasSlowFilter():
+        return True
 
-	def detectNegPeak(self):
-		return self.slowFilter.detectNegPeak()
+    def hasFastFilter():
+        return True
 
-
-	def setFastFilterCoefficients(self,b):
-		self.fastFilter.setCoefficients(b)
-
-
-	def setSlowFilterCoefficients(self,b):
-		self.slowFilter.setCoefficients(b)
-
-
-	def setSlopeFilterCoefficients(self,b):
-		self.slopeFilter.setCoefficients(b)
-
-
-	def hasSlowFilter():
-		return True
-
-
-	def hasFastFilter():
-		return True
-
-
-	def hasSlopeFilter():
-		return True
+    def hasSlopeFilter():
+        return True

@@ -20,22 +20,24 @@
 #
 
 import RPi.GPIO as GPIO
+
 GPIO.setmode(GPIO.BOARD)
 
-class door:
-	def __init__(self, pin, open_state = True):
-		'''Check the door state.  pin is the pin number on the GPIO header
-		and open_state is the input state which represents the door is open.
-		If pin is None then there is no door switch, so always report the
-		door is not open.'''
-		self._pin = pin
-		self.open_state = bool(open_state)
-		if self._pin:
-			GPIO.setup(self._pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-	@property
-	def isOpen(self):
-		if self._pin:
-			return bool(GPIO.input(self._pin)==self.open_state)
-		else:
-			return False
+class door:
+    def __init__(self, pin, open_state=True):
+        '''Check the door state.  pin is the pin number on the GPIO header
+        and open_state is the input state which represents the door is open.
+        If pin is None then there is no door switch, so always report the
+        door is not open.'''
+        self._pin = pin
+        self.open_state = bool(open_state)
+        if self._pin:
+            GPIO.setup(self._pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    @property
+    def isOpen(self):
+        if self._pin:
+            return bool(GPIO.input(self._pin) == self.open_state)
+        else:
+            return False

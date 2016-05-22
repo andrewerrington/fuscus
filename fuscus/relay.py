@@ -20,30 +20,32 @@
 
 
 import RPi.GPIO as GPIO
+
 GPIO.setmode(GPIO.BOARD)
 
+
 class relay:
-	"""Simple class for controlling a relay."""
-	
-	def __init__(self, pin, invert = False, init = False):
-		self._pin = pin	# GPIO pin number (board numbering)
-		self.inverted = bool(invert)	# Is the hardware active low (True)
-										# or active high (False)
-		self.state = bool(init)	# We can read this class variable to get
-								# the current state
-		
-		# Configure the I/O pin and set its initial state.
-		GPIO.setup(self._pin, GPIO.OUT, initial = init^invert)
+    """Simple class for controlling a relay."""
 
-	def set_output(self, state):
-		"""Set output pin based on desired state and hardware inversion."""
-		self.state = bool(state)
-		GPIO.output(self._pin, self.state^self.inverted)
-		
-	def on(self):
-		"""Turn relay on."""
-		self.set_output(True)
+    def __init__(self, pin, invert=False, init=False):
+        self._pin = pin  # GPIO pin number (board numbering)
+        self.inverted = bool(invert)  # Is the hardware active low (True)
+        # or active high (False)
+        self.state = bool(init)  # We can read this class variable to get
+        # the current state
 
-	def off(self):
-		"""Turn relay off."""
-		self.set_output(False)
+        # Configure the I/O pin and set its initial state.
+        GPIO.setup(self._pin, GPIO.OUT, initial=init ^ invert)
+
+    def set_output(self, state):
+        """Set output pin based on desired state and hardware inversion."""
+        self.state = bool(state)
+        GPIO.output(self._pin, self.state ^ self.inverted)
+
+    def on(self):
+        """Turn relay on."""
+        self.set_output(True)
+
+    def off(self):
+        """Turn relay off."""
+        self.set_output(False)

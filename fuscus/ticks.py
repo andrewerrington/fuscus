@@ -23,10 +23,12 @@
 
 import time
 
+
 def timeSince(t):
-	"""Return number of seconds since time t."""
-	return time.time()-t
+    """Return number of seconds since time t."""
+    return time.time() - t
+
 
 def seconds():
-	"""Return current time in seconds."""
-	return time.time()
+    """Return current time in seconds."""
+    return time.time()

@@ -26,7 +26,6 @@ from constants import *
 from tempControl import MODES, STATES, MIN_COOL_ON_TIME, MIN_HEAT_ON_TIME
 import ticks
 
-
 # Constant strings used multiple times
 STR_Beer_ = "Beer "
 STR_Fridge_ = "Fridge "
@@ -37,7 +36,6 @@ STR_ing_for = "ing for"
 STR_Wait_to_ = "Wait to "
 STR__time_left = " time left"
 STR_empty_string = ""
-
 
 # Other constants
 LCD_FLAG_DISPLAY_ROOM = 0x01
@@ -73,7 +71,7 @@ def printStationaryText():
 
 def printDegreeUnit(x, y):
     """Print degree sign + temp unit."""
-    LCD.cursor(x,y)
+    LCD.cursor(x, y)
     LCD.print('°')
     LCD.print(tempControl.cc.tempFormat)
 
@@ -177,12 +175,12 @@ def printState():
         # Nokia LCD is 17 characters wide, so bring nnmnn
         # 3 characters left by padding with spaces on the
         # right so we can see.
-        printString="%dm%02d   "%(minutes, time%60)
+        printString = "%dm%02d   "%(minutes, time%60)
 
         # If we have hours, then mnn seconds will not be
         # visible on LCD, but will be visible on web interface.
         if (int(hours) != 0):
-            printString="%2dh%02dm%02d"%(hours, minutes%60, time%60)
+            printString = "%2dh%02dm%02d"%(hours, minutes%60, time%60)
 
         LCD.printat(20-len(printString), 3, printString)
 
@@ -229,12 +227,12 @@ def printFridgeSet():
 
 
 def printTemperatureAt(x, y, temp):
-    LCD.cursor(x,y)
+    LCD.cursor(x, y)
     printTemperature(temp)
 
 
 def printAt(x, y, s):
-    LCD.printat(x,y,s)
+    LCD.printat(x, y, s)
 
 
 def printTemperature(temp):
@@ -242,7 +240,7 @@ def printTemperature(temp):
         LCD.print(" --.-")
         return
 
-    LCD.print("%5.1f"%temp)
+    LCD.print("%5.1f" % temp)
 
 
 def setDisplayFlags(newFlags):
