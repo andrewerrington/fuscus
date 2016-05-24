@@ -58,10 +58,8 @@ class eepromManager:
         # 9. Initialize temperature control
         self.tempControl.initFilters()
 
-
     def saveDefaultDevices(self):
         return False  # Appears to be unimplemented in the original file
-
 
     def applySettings(self):
         # If there aren't any settings saved, load the defaults & then write them out to a file.
@@ -99,14 +97,12 @@ class eepromManager:
         # }
         return True
 
-
     def storeTempSettings(self):
         self.tempControl.storeSettings()
 
     def storeTempConstantsAndSettings(self):
         self.tempControl.storeConstants()
         self.storeTempSettings()
-
 
     def fetchDevice(self):
         # TODO - Implement
@@ -129,4 +125,3 @@ class eepromManager:
         #     return ok;
         # }
         pass
-
