@@ -60,18 +60,16 @@ def killhandle(signum, frame):
 
 
 def setup():
-    # resetEeprom = platform_init()	# FIXME: not implemented
-    # eepromManager.init()	# FIXME: not implemented
+    # resetEeprom = platform_init()	# Not needed for Fuscus - This initialzies the eeprom access
+    # eepromManager.init()	# Not needed for Fuscus - This checks the eeprom size on Arduino to ensure validity
     # ui.init()
     # f,portName=piLink.init()
     print("started")
     logging.debug("started")
     # tempControl.init()
-    # settingsManager.loadSettings()	# FIXME No settings manager
-    # FIXME The next two lines are temporary code to make things work.
-    # They should be done by the settings manager.
-    tempControl.loadDefaultSettings()
-    tempControl.loadDefaultConstants()
+
+    # This loads the settings if saved (and the defaults, if not)
+    eepromManager.applySettings()  # NOTE - This replaces settingsManager.loadSettings()
 
     start = time.time()
     delay = ui.showStartupPage(piLink.portName)

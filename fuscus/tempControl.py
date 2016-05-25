@@ -27,6 +27,8 @@ import ticks
 
 import tempSensor
 
+import os.path
+
 # Constants from tempControl.h
 # Values represent time in seconds
 
@@ -123,8 +125,7 @@ class ControlConstants:
 
 
 class tempController:
-    def __init__(self, ID_fridge, ID_beer=None, ID_ambient=None,
-                 cooler=None, heater=None, door=None):
+    def __init__(self, ID_fridge, ID_beer=None, ID_ambient=None, cooler=None, heater=None, door=None):
         # We must have at least a fridge sensor
 
         self.cs = ControlSettings()
@@ -565,7 +566,7 @@ class tempController:
         estimator *= factor
         if (estimator < 0.05):
             estimator = 0.05  # make estimator at least 0.05
-        # FIXME: eepromManager.storeTempSettings();
+        self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
     def decreaseEstimator(self, estimator, error):
         """Decrease estimator at least 16.7% (1/1.2), max 33.3% (1/1.5)."""
@@ -573,8 +574,8 @@ class tempController:
         # // 0.833 - 3.1% of error, limit between 0.667 and 0.833
         factor = 0.833 - max(0, min(abs(error) * 0.031, 0.166))  # 0.833 - 3.1% of error, limit between 0.667 and 0.833
         estimator *= factor
+        self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
-    # FIXME: eepromManager.storeTempSettings();
 
 
     def timeSinceCooling(self):
@@ -611,6 +612,24 @@ class tempController:
         self.cc.__dict__.update(data)
 
         self.initFilters()
+
+    def hasStoredSettings(self):
+        # This is a departure from the Arduino implementation - This is designed to circumvent the hack that is used
+        # in eepromManager to determine if we have settings to load.
+        if not os.path.isfile('EEPROM.cc'):
+            return False
+        elif not os.path.isfile('EEPROM.cs'):
+            return False
+        else:
+            return True
+
+    def zapStoredSettings(self):
+        # Again - this is a departure from the Arduino implementation. Only moving this here (rather than in the
+        # eepromManager class) because the definition of the file names is here
+        if os.path.isfile('EEPROM.cc'):
+            os.remove('EEPROM.cc')
+        if os.path.isfile('EEPROM.cs'):
+            os.remove('EEPROM.cs')
 
     def storeSettings(self):
         """Write variables in cs class to EEPROM (file)."""
@@ -682,7 +701,7 @@ class tempController:
                 self.cs.beerSetting = None
                 self.cs.fridgeSetting = None
 
-            # FIXME: eepromManager.storeTempSettings()
+        self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
     def getBeerTemp(self):
         if (self.beerSensor.isConnected()):
@@ -712,14 +731,10 @@ class tempController:
         self.updatePID()
         self.updateState()
 
-    # FIXME: Implement this
-    # if (self.cs.mode != MODES['MODE_BEER_PROFILE']
-    #	or abs(self.storedBeerSetting - newTemp) > 0.25):
-    # more than 1/4 degree C difference with EEPROM
-    # Do not store settings every time in profile mode, because EEPROM has limited number of write cycles.
-    # A temperature ramp would cause a lot of writes
-    # If Raspberry Pi is connected, it will update the settings anyway. This is just a safety feature.
-    # FIXME: eepromManager.storeTempSettings()
+        # To prevent lots of write cycles, don't store setting differences of less than 0.125 deg C in profile mode
+        # If Raspberry Pi is connected, it will update the settings anyway. This is just a safety feature.
+        if self.cs.mode != MODES['MODE_BEER_PROFILE'] or abs(self.storedBeerSetting - newTemp) > 0.125:  #.25 -> .125
+            self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
 
     def setFridgeTemp(self, newTemp):
@@ -728,8 +743,7 @@ class tempController:
         self.reset()  # reset peak detection and PID
         self.updatePID()
         self.updateState()
-
-    # FIXME eepromManager.storeTempSettings()
+        self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
 
     def stateIsCooling(self):

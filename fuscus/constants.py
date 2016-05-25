@@ -24,6 +24,7 @@ import configparser
 import argparse
 
 import tempControl
+import EepromManager
 import relay
 import rotaryEncoder
 import pcd8544
@@ -188,6 +189,8 @@ LCD = lcd.lcd(lines=6, chars=20, hardware=LCD_hardware)
 tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
                                          cooler=cooler, heater=heater, door=DOOR)
 
-piLink = piLink.piLink(tempControl=tempControl, path=config['port'].get('path'))
+eepromManager = EepromManager.eepromManager(tempControl=tempControl)
+
+piLink = piLink.piLink(tempControl=tempControl, path=config['port'].get('path'), eepromManager=eepromManager)
 
 menu = Menu.Menu(encoder=encoder, tempControl=tempControl, piLink=piLink)

@@ -44,7 +44,7 @@ STR_FMT_SET_TO = " set to %s "
 
 
 class piLink:
-    def __init__(self, tempControl, path):
+    def __init__(self, tempControl, path, eepromManager):
         # Set up a pty to accept serial input as if we are an Arduino
         # FIXME: Make this a socket interface.  The main brewpi code can send to a socket.
         # use port 25518 (beer 2 5 5 18)
@@ -80,6 +80,7 @@ class piLink:
 
         self.tempControl = tempControl
         self.tempControl.piLink = self  # FIXME is this good practice?
+        self.eepromManager = eepromManager
 
     def cleanup(self):
         # Delete the symlink for our instance when we exit
@@ -171,11 +172,9 @@ class piLink:
                 self.receiveJson()
 
             elif inByte == 'E':  # initialize eeprom
-                # FIXME not implemented
-                # eepromManager.initializeEeprom()
-                # logInfo(INFO_EEPROM_INITIALIZED)
-                # settingsManager.loadSettings()
-                pass
+                self.eepromManager.initializeEeprom()
+                self.eepromManager.applySettings()  # NOTE - This replaces settingsManager.loadSettings()
+                print("eeprom initialized.")
 
             elif inByte == 'd':  # list devices in eeprom order
                 # FIXME not implemented
@@ -204,6 +203,11 @@ class piLink:
             elif inByte == 'F':  # flash firmware
                 print("Flash firmware request.  Not supported.")
                 # flashFirmware()
+
+            elif inByte == 'Z':  # zap eeprom
+                # Leaving this unimplemented, but if we want to implement just uncomment the line below
+                # self.eepromManager.zapEeprom()
+                pass
 
             elif inByte != '':
                 # logWarningInt(WARNING_INVALID_COMMAND, inByte);
@@ -479,6 +483,8 @@ class piLink:
         if JSONKEY_rotaryHalfSteps in newSettings:
             self.tempControl.cc.rotaryHalfSteps = int(newSettings[JSONKEY_rotaryHalfSteps])
 
+        self.eepromManager.storeTempConstantsAndSettings()  # Note - this is merged into the code called by virtually
+                                                            # all of the above lines. Factoring it out to here instead.
         print(vars(self.tempControl.cc))
 
     # FIXME Still to do
@@ -597,10 +603,8 @@ class piLink:
         self.tempControl.setFridgeTemp(newTemp)
 
     def setTempFormat(self, val):
-        # Only Celsius for now
-        # TODO - Implement Fahrenheit
         self.tempControl.setTempFormat(val)
-        pass
+        self.eepromManager.storeTempConstantsAndSettings()
 
     #	typedef void (*JsonParserHandlerFn)(const char* val, void* target);
 
