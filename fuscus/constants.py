@@ -189,6 +189,15 @@ LCD = lcd.lcd(lines=6, chars=20, hardware=LCD_hardware)
 tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
                                          cooler=cooler, heater=heater, door=DOOR)
 
+# Set the temperature calibration offsets (if available)
+# FIXME - This should be part of deviceManager & saved to/loaded from the eeprom
+if ID_fridge and config['sensors'].get('fridge_offset'):
+    tempControl.fridgeSensor.calibrationOffset = float(config['sensors'].get('fridge_offset'))
+if ID_beer and config['sensors'].get('beer_offset'):
+    tempControl.fridgeSensor.calibrationOffset = float(config['sensors'].get('beer_offset'))
+if ID_ambient and config['sensors'].get('ambient_offset'):
+    tempControl.fridgeSensor.calibrationOffset = float(config['sensors'].get('ambient_offset'))
+
 eepromManager = EepromManager.eepromManager(tempControl=tempControl)
 
 piLink = piLink.piLink(tempControl=tempControl, path=config['port'].get('path'), eepromManager=eepromManager)

@@ -24,8 +24,9 @@ login as **fuscus**
 *echo "fuscus/" >> .git/info/sparse-checkout*  
 *git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
-13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings.  
+13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings. A sample fuscus.ini is saved as **fuscus.sample.ini**.  
 *cd fuscus*  
+*cp fuscus.sample.ini*
 *nano fuscus.ini*
 14. Run fuscus  
 *sudo ./fuscus.py*
