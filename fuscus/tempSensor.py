@@ -37,7 +37,7 @@ import logging
 class sensor(DS18B20):
     def __init__(self, deviceID, calibrationOffset=0):
 
-        super().__init__(deviceID, samplePeriod=1)
+        super().__init__(deviceID, samplePeriod=1, calibrationOffset=calibrationOffset)
 
         self.deviceID = deviceID
 
@@ -55,11 +55,6 @@ class sensor(DS18B20):
         self.slowFilter = FilterCascaded.CascadedFilter()
         self.slopeFilter = FilterCascaded.CascadedFilter()
         self.prevOutputForSlope = None
-
-        if calibrationOffset is None:
-            self.calibrationOffset = 0
-        else:
-            self.calibrationOffset = calibrationOffset
 
         time.sleep(1)  # Wait for at least one reading to be ready.
 
@@ -81,14 +76,11 @@ class sensor(DS18B20):
 
     def update(self):
         # if (!_sensor || (temp=_sensor->read())==TEMP_SENSOR_DISCONNECTED) {
-        # One big difference between the Arduino code & this code is that _sensor->read() includes the calibration
-        # offsets. To compensate, adding it here.
         temp = self.temperature
         if (temp is None):
             if (self.failedReadCount < 255):  # limit
                 self.failedReadCount += 1
             return
-        temp += self.calibrationOffset
 
         self.fastFilter.add(temp)
         self.slowFilter.add(temp)

@@ -39,13 +39,17 @@ class DS18B20(threading.Thread):
     return a temperature of None.
     """
 
-    def __init__(self, deviceID, samplePeriod=1):
-        """deviceID is the 1-wire address.  samplePeriod is in seconds."""
+    def __init__(self, deviceID, samplePeriod=1, calibrationOffset=0):
+        """deviceID is the 1-wire address.  samplePeriod is in seconds.  
+        calibrationOffset is a float which will be added to the sensor
+        reading to correct it if necessary."""
         threading.Thread.__init__(self)
 
         self.deviceID = deviceID
 
         self.samplePeriod = samplePeriod
+
+        self.calibrationOffset = float(calibrationOffset)
 
         # Initialise temperature to None, meaning no reading is available
         self.temperature = None
@@ -112,7 +116,7 @@ class DS18B20(threading.Thread):
 
                 break
 
-            self.temperature = temperature
+            self.temperature = temperature + self.calibrationOffset
             time.sleep(self.samplePeriod)
 
     def stop(self):
