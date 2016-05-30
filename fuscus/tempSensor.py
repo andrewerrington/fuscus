@@ -35,9 +35,9 @@ import logging
 # This class adds filtering and other functions to the sensor.
 
 class sensor(DS18B20):
-    def __init__(self, deviceID):
+    def __init__(self, deviceID, calibrationOffset=0):
 
-        super().__init__(deviceID, samplePeriod=1)
+        super().__init__(deviceID, samplePeriod=1, calibrationOffset=calibrationOffset)
 
         self.deviceID = deviceID
 

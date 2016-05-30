@@ -46,6 +46,11 @@ print("Using config file '%s'" % args.config)
 config = configparser.ConfigParser()
 config.read(args.config)
 
+print("Using calibration file 'calibrate.ini'")
+
+calibration = configparser.ConfigParser()
+calibration.read('calibrate.ini')
+
 # Port for TCP/IP control FIXME: not implemented yet
 port = config['network'].getint('port', 25518)
 print("Network port: %s (not implemented)" % port)
@@ -188,6 +193,15 @@ LCD = lcd.lcd(lines=6, chars=20, hardware=LCD_hardware)
 
 tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
                                          cooler=cooler, heater=heater, door=DOOR)
+
+# Set the temperature calibration offsets (if available)
+# FIXME - This should be part of deviceManager & saved to/loaded from the eeprom
+if ID_fridge:
+    tempControl.fridgeSensor.calibrationOffset = calibrate['offset'].getfloat(ID_fridge,0.0)
+if ID_beer:
+    tempControl.beerSensor.calibrationOffset = calibrate['offset'].getfloat(ID_beer,0.0)
+if ID_ambient:
+    tempControl.ambientSensor.calibrationOffset = calibrate['offset'].getfloat(ID_ambient,0.0)
 
 eepromManager = EepromManager.eepromManager(tempControl=tempControl)
 
