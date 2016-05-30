@@ -137,3 +137,4 @@ fabric.properties
 
 # Ignore the individual fuscus.ini file
 fuscus.ini
+calibrate.ini

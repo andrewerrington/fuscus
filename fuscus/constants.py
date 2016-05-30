@@ -196,12 +196,13 @@ tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
 
 # Set the temperature calibration offsets (if available)
 # FIXME - This should be part of deviceManager & saved to/loaded from the eeprom
-if ID_fridge:
-    tempControl.fridgeSensor.calibrationOffset = calibrate['offset'].getfloat(ID_fridge,0.0)
-if ID_beer:
-    tempControl.beerSensor.calibrationOffset = calibrate['offset'].getfloat(ID_beer,0.0)
-if ID_ambient:
-    tempControl.ambientSensor.calibrationOffset = calibrate['offset'].getfloat(ID_ambient,0.0)
+if 'offset' in calibration:
+    if ID_fridge:
+        tempControl.fridgeSensor.calibrationOffset = calibration['offset'].getfloat(ID_fridge,0.0)
+    if ID_beer:
+        tempControl.beerSensor.calibrationOffset = calibration['offset'].getfloat(ID_beer,0.0)
+    if ID_ambient:
+        tempControl.ambientSensor.calibrationOffset = calibration['offset'].getfloat(ID_ambient,0.0)
 
 eepromManager = EepromManager.eepromManager(tempControl=tempControl)
 

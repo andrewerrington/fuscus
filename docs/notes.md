@@ -24,9 +24,9 @@ login as **fuscus**
 *echo "fuscus/" >> .git/info/sparse-checkout*  
 *git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
-13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings. A sample fuscus.ini is saved as **fuscus.sample.ini**.  
+13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings. A sample fuscus.ini is saved as **fuscus.sample.ini.**
 *cd fuscus*  
-*cp fuscus.sample.ini*
+*cp fuscus.sample.ini fuscus.ini*
 *nano fuscus.ini*
 14. Run fuscus  
 *sudo ./fuscus.py*
@@ -46,7 +46,18 @@ a *@reboot* entry.  An example @reboot entry which discards normal output and lo
 When fuscus is running it will listen on /dev/fuscus for a connection
 from BrewPi.  BrewPi will attempt to connect every minute.  This means
 you may have to wait for up to one minute for BrewPi to connect to fuscus
-and start getting data. 
+and start getting data.
+
+## Optional - Sensor Calibration
+Fuscus provides a feature by which each measurement from your sensors can be adjusted if the calibration is incorrect. If you wish to use this feature, do the following:
+1. Calibrate your sensors by measuring the temperature they record, and determining the offset from a known temperature reading.
+2. Create the calibration file and open for editing in your favorite editor:
+*cp calibrate.sample.ini calibrate.ini*
+*sudo nano calibrate.ini*
+3. Add the device ID for your sensor along with the offset in degrees Celsius to be added to each reading. For example:
+*28-031590ed07ff = 0.4*
+would result in sensor 28-031590ed07ff having 0.4 degrees Celsius added to each reading. Please note - The offsets must always be in degrees Celsius, even when running in Fahrenheit mode.
+
 
 ## Notes for later development
 Change the line in BrewPiUtil.py around line 130:
