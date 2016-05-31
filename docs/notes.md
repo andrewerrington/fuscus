@@ -49,7 +49,8 @@ you may have to wait for up to one minute for BrewPi to connect to fuscus
 and start getting data.
 
 ## Optional - Sensor Calibration
-Fuscus provides a feature by which each measurement from your sensors can be adjusted if the calibration is incorrect. If you wish to use this feature, do the following:
+Fuscus provides a feature to adjust each measurement from your sensors if
+they read a little high or low.  To use it, do the following:
 1. Calibrate your sensors by measuring the temperature they record, and determining the offset from a known temperature reading.
 2. Create the calibration file and open for editing in your favorite editor:
 *cp calibrate.sample.ini calibrate.ini*

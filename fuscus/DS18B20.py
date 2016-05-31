@@ -112,13 +112,12 @@ class DS18B20(threading.Thread):
                         break
                 else:
                     # new temperature is acceptable
-                    temperature = new_temperature
+                    temperature = new_temperature + self.calibrationOffset
 
                 break
-            if temperature is not None:
-                self.temperature = temperature + self.calibrationOffset
-            else:  # Not sure if this is desired behavior or if we would rather leave the cached temperature.
-                self.temperature = temperature
+
+            self.temperature = temperature
+
             time.sleep(self.samplePeriod)
 
     def stop(self):
