@@ -57,7 +57,7 @@ they read a little high or low.  To use it, do the following:
 determining the offset from a known temperature reading.  
 2. Create the calibration file and open for editing in your favorite editor:  
 *cp calibrate.sample.ini calibrate.ini*  
-*sudo nano calibrate.ini*  
+*nano calibrate.ini*  
 3. Add the device ID for your sensor along with the offset in degrees
 Celsius to be added to each reading. For example:  
 *28-031590ed07ff = 0.4*  
