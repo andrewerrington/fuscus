@@ -24,10 +24,12 @@ login as **fuscus**
 *echo "fuscus/" >> .git/info/sparse-checkout*  
 *git pull origin master*  
 Now the source is in /fuscus, with no docs or other files.
-13. Change to the fuscus directory and edit the **fuscus.ini** to include your temperature sensor IDs and other settings. A sample fuscus.ini is saved as **fuscus.sample.ini.**
+13. Change to the fuscus directory and edit the **fuscus.ini** to enter
+your temperature sensor IDs and other settings. A sample fuscus.ini is
+saved as **fuscus.sample.ini.**  
 *cd fuscus*  
-*cp fuscus.sample.ini fuscus.ini*
-*nano fuscus.ini*
+*cp fuscus.sample.ini fuscus.ini*  
+*nano fuscus.ini*  
 14. Run fuscus  
 *sudo ./fuscus.py*
 15. Log in as **pi** and install brewpi software using these instructions:  
@@ -50,14 +52,18 @@ and start getting data.
 
 ## Optional - Sensor Calibration
 Fuscus provides a feature to adjust each measurement from your sensors if
-they read a little high or low.  To use it, do the following:
-1. Calibrate your sensors by measuring the temperature they record, and determining the offset from a known temperature reading.
-2. Create the calibration file and open for editing in your favorite editor:
-*cp calibrate.sample.ini calibrate.ini*
-*sudo nano calibrate.ini*
-3. Add the device ID for your sensor along with the offset in degrees Celsius to be added to each reading. For example:
-*28-031590ed07ff = 0.4*
-would result in sensor 28-031590ed07ff having 0.4 degrees Celsius added to each reading. Please note - The offsets must always be in degrees Celsius, even when running in Fahrenheit mode.
+they read a little high or low.  To use it, do the following:  
+1. Calibrate your sensors by measuring the temperature they report, and
+determining the offset from a known temperature reading.  
+2. Create the calibration file and open for editing in your favorite editor:  
+*cp calibrate.sample.ini calibrate.ini*  
+*sudo nano calibrate.ini*  
+3. Add the device ID for your sensor along with the offset in degrees
+Celsius to be added to each reading. For example:  
+*28-031590ed07ff = 0.4*  
+would result in sensor 28-031590ed07ff having 0.4 degrees Celsius added
+to each reading. Please note - The offsets must always be in degrees 
+Celsius, even when running in Fahrenheit mode.
 
 
 ## Notes for later development
