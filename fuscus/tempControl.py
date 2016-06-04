@@ -326,7 +326,7 @@ class tempController:
 
         # Stay idle if the fridge sensor isn't connected
         # TODO - Make sure this didn't break beer settings/profiles
-        if not self.cs.fridgeSetting or not self.fridgeSensor.temperature:
+        elif not self.cs.fridgeSetting or not self.fridgeSensor.temperature:
             self.state = STATES['IDLE']
             stayIdle = True
         elif not self.beerSensor.temperature and (self.cs.mode == MODES['MODE_BEER_CONSTANT'] or self.cs.mode == MODES['MODE_BEER_PROFILE']):
