@@ -46,10 +46,12 @@ print("Using config file '%s'" % args.config)
 config = configparser.ConfigParser()
 config.read(args.config)
 
-print("Using calibration file 'calibrate.ini'")
-
 calibration = configparser.ConfigParser()
 calibration.read('calibrate.ini')
+if 'offset' in calibration:
+    print("Using calibration file 'calibrate.ini'")
+else:
+    print("No 'calibration.ini' file or no calibration values present.")
 
 # Port for TCP/IP control FIXME: not implemented yet
 port = config['network'].getint('port', 25518)
@@ -129,6 +131,10 @@ ID_fridge = config['sensors'].get('fridge')
 ID_beer = config['sensors'].get('beer')
 ID_ambient = config['sensors'].get('ambient')
 
+fridgeCalibrationOffset = 0.0
+beerCalibrationOffset = 0.0
+ambientCalibrationOffset = 0.0
+
 if not (ID_fridge):
     raise ValueError("1-wire address of fridge not specified in 'fuscus.ini'.")
 
@@ -138,9 +144,16 @@ if ID_beer == '':
 if ID_ambient == '':
     ID_ambient = None
 
-print("Fridge sensor : %s" % ID_fridge)
-print("Beer sensor   : %s" % ID_beer)
-print("Ambient sensor: %s" % ID_ambient)
+if 'offset' in calibration:
+    fridgeCalibrationOffset = calibration['offset'].getfloat(ID_fridge,0.0)
+    if ID_beer:
+        beerCalibrationOffset = calibration['offset'].getfloat(ID_beer,0.0)
+    if ID_ambient:
+        ambientCalibrationOffset = calibration['offset'].getfloat(ID_ambient,0.0)
+
+print("Fridge sensor : %-15s (%+.2f)"%(ID_fridge,fridgeCalibrationOffset))
+print("Beer sensor   : %-15s (%+.2f)"%(ID_beer,beerCalibrationOffset))
+print("Ambient sensor: %-15s (%+.2f)"%(ID_ambient,ambientCalibrationOffset))
 
 # Door (1 GPIO + GND)
 # Best pin for this is pin 3 as it has a 1.8k pull-up on board
@@ -196,13 +209,9 @@ tempControl = tempControl.tempController(ID_fridge, ID_beer, ID_ambient,
 
 # Set the temperature calibration offsets (if available)
 # FIXME - This should be part of deviceManager & saved to/loaded from the eeprom
-if 'offset' in calibration:
-    if ID_fridge:
-        tempControl.fridgeSensor.calibrationOffset = calibration['offset'].getfloat(ID_fridge,0.0)
-    if ID_beer:
-        tempControl.beerSensor.calibrationOffset = calibration['offset'].getfloat(ID_beer,0.0)
-    if ID_ambient:
-        tempControl.ambientSensor.calibrationOffset = calibration['offset'].getfloat(ID_ambient,0.0)
+tempControl.fridgeSensor.calibrationOffset = fridgeCalibrationOffset
+tempControl.beerSensor.calibrationOffset = beerCalibrationOffset
+tempControl.ambientSensor.calibrationOffset = ambientCalibrationOffset
 
 eepromManager = EepromManager.eepromManager(tempControl=tempControl)
 
