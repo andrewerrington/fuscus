@@ -226,7 +226,7 @@ fi
 #usermod -a -G brewpi pi||die
 
 # TODO - Update this
-#echo "fuscus ALL = NOPASSWD: ${installPath}/fuscus/fuscus.py" | (sudo su -c 'EDITOR="tee" visudo -f /etc/sudoers.d/rsync')
+sudo bash -c 'echo "fuscus ALL = NOPASSWD: ${installPath}/fuscus/fuscus.py" | (EDITOR="tee -a" visudo)'
 
 echo -e "\n***** Checking install directories *****"
 
@@ -333,9 +333,9 @@ echo -e "\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 echo -e "Review the log above for any errors, otherwise, the initial install is complete!"
 echo -e "\nYou are currently using the password 'fuscus' for the fuscus user. If you wish to change this, type 'sudo passwd fuscus' now, and follow the prompt."
 echo -e "\n\n To finalize the setup of Fuscus, do the following:"
-echo -e "\n  1. Edit '${installPath}/fuscus/fuscus/fuscus.sample.ini' to contain your sensor IDs and then rename the file to 'fuscus.ini'. \n"
-echo -e "\n  2. Run Fuscus using the command 'sudo ${installPath}/fuscus/fuscus/fuscus.py'. \n"
-echo -e "\n  3. Set Fuscus to launch at runtime by adding a crontab entry. Instructions are available at https://github.com/andrewerrington/fuscus/blob/master/docs/notes.md \n"
+echo -e "  1. Edit '${installPath}/fuscus/fuscus.sample.ini' as user 'fuscus' to contain your sensor IDs and then rename the file to 'fuscus.ini'."
+echo -e "  2. Run Fuscus using the command 'sudo ${installPath}/fuscus/fuscus.py'."
+echo -e "  3. Set Fuscus to launch at runtime by adding a crontab entry. Instructions are available at https://github.com/andrewerrington/fuscus/blob/master/docs/notes.md \n"
 
 echo -e "\nGood luck!!"
 
