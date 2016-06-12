@@ -125,14 +125,6 @@ echo "To accept the default answer, just press Enter."
 echo "The default is capitalized in a Yes/No question: [Y/n]"
 echo "or shown between brackets for other questions: [default]"
 
-date=$(date)
-read -p "The time is currently set to $date. Is this correct? [Y/n]" choice
-case "$choice" in
-  n | N | no | NO | No )
-    dpkg-reconfigure tzdata;;
-  * )
-esac
-
 
 ############
 ### Now for the install!
