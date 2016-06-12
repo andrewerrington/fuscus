@@ -218,7 +218,7 @@ fi
 #usermod -a -G brewpi pi||die
 
 # TODO - Update this
-sudo bash -c 'echo "fuscus ALL = NOPASSWD: ${installPath}/fuscus/fuscus.py" | (EDITOR="tee -a" visudo)'
+sudo bash -c "echo \"fuscus ALL = NOPASSWD: ${installPath}/fuscus/fuscus.py\" | (EDITOR=\"tee -a\" visudo)"
 
 echo -e "\n***** Checking install directories *****"
 
