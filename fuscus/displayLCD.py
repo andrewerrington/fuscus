@@ -42,7 +42,7 @@ LCD_FLAG_DISPLAY_ROOM = 0x01
 LCD_FLAG_ALTERNATE_ROOM = 0x02
 
 # Variables.  #FIXME consider making a class, with these as class variables
-flags = LCD_FLAG_ALTERNATE_ROOM  # TODO - Change this so that it disables if room sensor is None
+flags = LCD_FLAG_ALTERNATE_ROOM
 stateOnDisplay = None
 
 
@@ -194,7 +194,7 @@ def printAllTemperatures():
     if (flags & LCD_FLAG_ALTERNATE_ROOM):
     #   bool displayRoom = ((ticks.seconds()&0x08)==0) && !BREWPI_SIMULATE && tempControl.ambientSensor->isConnected()
         displayRoom = (((int(ticks.seconds())&0x04)==0)
-                and tempControl.ambientSensor is not None)
+                and tempControl.ambientSensor.deviceID is not None)
         if (displayRoom ^ ((flags & LCD_FLAG_DISPLAY_ROOM)!=0)):    # transition
             flags = (flags | LCD_FLAG_DISPLAY_ROOM) if displayRoom else (flags & ~LCD_FLAG_DISPLAY_ROOM)
             printStationaryText()
