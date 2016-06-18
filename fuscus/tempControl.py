@@ -462,7 +462,8 @@ class tempController:
         """Detect peaks in fridge temperature to tune overshoot estimators."""
         # LOG_ID_TYPE detected = 0;
         detected = None
-        peak = estimate = error = oldEstimator = newEstimator = None
+        peak = estimate = oldEstimator = newEstimator = None
+        error = 0.0     # Arduino code does not initialise these variables!
         if (self.doPosPeakDetect and not self.stateIsHeating()):
             # FIXME: Either of these could be None.  Used to be INVALID_TEMP, so the maths would work.
             # INVALID_TEMP = -32768
@@ -542,7 +543,7 @@ class tempController:
                     # This is the cooling, then drift down too slow (but in the right direction).
                     # estimator is too high
                     peak = self.fridgeSensor.readFastFiltered()
-                    self.decreaseEstimator(self.cs.coolEstimator, error)  # FIXME: error is not known here
+                    self.decreaseEstimator(self.cs.coolEstimator, error)
                     detected = 'INFO_NEGATIVE_DRIFT'
                 else:
                     # maximum time for peak estimation reached
