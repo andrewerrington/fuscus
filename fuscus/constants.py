@@ -5,17 +5,17 @@
 # Copyright 2015 Andrew Errington
 #
 # This file is part of BrewPi.
-# 
+#
 # BrewPi is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # BrewPi is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -41,10 +41,14 @@ parser.add_argument('--config', '-c',
 
 args = parser.parse_args()
 
-print("Using config file '%s'" % args.config)
 
 config = configparser.ConfigParser()
 config.read(args.config)
+
+if 'network' in config:
+    print("Using config file '%s'" % args.config)
+else:
+    print("Config file {} not present, or is malformed. Did you copy the sample ini file and edit it?".format(args.config))
 
 calibration = configparser.ConfigParser()
 calibration.read('calibrate.ini')
@@ -90,6 +94,8 @@ elif lcd_module == 'pcd8544':
     lcd_RST = config['ui'].getint('lcd_RST')
     lcd_DC = config['ui'].getint('lcd_DC')
     lcd_LED = config['ui'].get('lcd_LED', 'None')
+
+    lcd_contrast = config['ui'].get('lcd_contrast', 185)
 
     if lcd_LED == 'None':
         lcd_LED = None
@@ -195,8 +201,7 @@ heater = relay.relay(relay_HOT, invert=invert_hot)
 cooler = relay.relay(relay_COLD, invert=invert_cold)
 
 if lcd_module == 'pcd8544':
-    LCD_hardware = pcd8544.pcd8544(
-        DC=lcd_DC, RST=lcd_RST, LED=lcd_LED)
+    LCD_hardware = pcd8544.pcd8544(DC=lcd_DC, RST=lcd_RST, LED=lcd_LED, contrast=lcd_contrast)
 else:
     LCD_hardware = None
 
