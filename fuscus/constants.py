@@ -20,18 +20,21 @@
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import configparser
 import argparse
+import configparser
 
-import tempControl
 import EepromManager
+import Menu
+import door
+import lcd
+import piLink
 import relay
 import rotaryEncoder
-import pcd8544
-import lcd
-import door
-import Menu
-import piLink
+import tempControl
+
+# LCD Hardware Modules
+from lcd_hardware import pcd8544
+from lcd_hardware import lcd2004_i2c
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', '-c',
@@ -43,7 +46,7 @@ args = parser.parse_args()
 
 
 config = configparser.ConfigParser()
-config.read(args.config)
+config.read(args.config)  # TODO - Wrap this in a try/except block to catch DuplicateOptionErrors and the like
 
 if 'network' in config:
     print("Using config file '%s'" % args.config)
@@ -110,12 +113,28 @@ elif lcd_module == 'pcd8544':
     lcd_SCE = 24
 
     print("Nokia 5110/PCD8544 LCD specified.")
-    print("lcd_RST = %s, lcd_DC = %s, lcd_LED = %s" %
-          (lcd_RST, lcd_DC, lcd_LED))
+    print("lcd_RST = %s, lcd_DC = %s, lcd_LED = %s" % (lcd_RST, lcd_DC, lcd_LED))
+
+    # Initialize the LCD_hardware object to pass to our LCD object later
+    LCD_hardware = pcd8544.pcd8544(DC=lcd_DC, RST=lcd_RST, LED=lcd_LED, contrast=lcd_contrast)
+
+elif lcd_module == 'lcd2004_i2c':
+    lcd_port = config['ui'].getint('lcd_port', 1)  # The i2c bus - 0 for original RasPi, 1 for all modern RasPis
+    lcd_i2c_pin_reverse = config['ui'].getint('lcd_i2c_pin_reverse', 1)  # Used if we need a non-standard pinout from the i2c expander
+    lcd_address_str = config['ui'].get('lcd_address', '0x27')  # The device address (hex)
+
+    lcd_address = int(lcd_address_str, 0)  # Convert the string (hex) to an actual number
+
+    print("LCD2004 /w I2C expander specified.")
+    print("lcd_port = %s, lcd_address = %s, lcd_i2c_pin_reverse = %s" % (lcd_port, lcd_address_str, lcd_i2c_pin_reverse))
+
+    # Initialize the LCD_hardware object to pass to our LCD object later
+    LCD_hardware = lcd2004_i2c.lcd2004_i2c(addr=lcd_address, port=lcd_port, reverse=lcd_i2c_pin_reverse)
 
 else:
     print("LCD module '%s' not recognised." % lcd_module)
     lcd_module = None
+    LCD_hardware = None
 
 # Buzzer (1 GPIO + GND)
 # FIXME: Not implemented
@@ -200,10 +219,6 @@ encoder.start()
 heater = relay.relay(relay_HOT, invert=invert_hot)
 cooler = relay.relay(relay_COLD, invert=invert_cold)
 
-if lcd_module == 'pcd8544':
-    LCD_hardware = pcd8544.pcd8544(DC=lcd_DC, RST=lcd_RST, LED=lcd_LED, contrast=lcd_contrast)
-else:
-    LCD_hardware = None
 
 # Nokia LCD has 17 chars by 6 lines, but original display and web display
 # show 20 chars by 4 lines, so make a buffer at least that big.
