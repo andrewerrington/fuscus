@@ -166,21 +166,11 @@ class lcd2004_i2c:
         # self.lcd_write(CMD_CURS_BLINK)
         self.lcd_write(CMD_DISP_ON)  # Turn on display
 
-        self.lcd_write(0x03)
-        self.lcd_write(0x03)
-        self.lcd_write(0x03)
-        self.lcd_write(0x02)
-
-        # self.lcd_write(CMD_FUNCTIONSET | LCD_2LINE | LCD_5x8DOTS | LCD_4BITMODE)
-        # self.lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON)
-        # self.lcd_write(LCD_CLEARDISPLAY)
-        # self.lcd_write(LCD_ENTRYMODESET | LCD_ENTRYLEFT)
-
 
     # clocks EN to latch command
     def lcd_strobe(self):
         self.lcd_device_write(self.lastcomm | (1<<6), 1) # 1<<6 is the enable pin
-        self.lcd_device_write(self.lastcomm,1)  # Technically not needed, but included so we can read from the display
+        self.lcd_device_write(self.lastcomm, 1)  # Technically not needed, but included so we can read from the display
 
     # write a command to lcd
     def lcd_write(self, cmd):
@@ -202,22 +192,21 @@ class lcd2004_i2c:
     def lcd_putc(self, char):
         self.lcd_write_char(ord(char))
 
-
     # Do clunky bitshifting to account for strangely wired boards
     # I guarantee there is an easier way of doing this.
     def lcd_device_write(self, commvalue, isstrobe=0):
-        tempcomm=commvalue | self.backlight_status
-        outcomm=[0 for i in range(8)]
+        tempcomm = commvalue | self.backlight_status
+        outcomm = [0 for i in range(8)]
 
         for a in range(0,8):
             outcomm[self.pins[a]]=(tempcomm & 1)
-            tempcomm=tempcomm>>1
+            tempcomm >>= 1
 
-        tempcomm=0
-        a=7
-        while (a >= 0):
-            tempcomm=(tempcomm<<1)|outcomm[a]
-            a=a-1;
+        tempcomm = 0
+        a = 7
+        while a >= 0:
+            tempcomm = (tempcomm<<1) | outcomm[a]
+            a -= 1
 
         self.lcd_device.write(tempcomm)
         # sleep(0.0005) # May be unnecessary, but including to guarantee we don't push data out too fast
@@ -225,11 +214,8 @@ class lcd2004_i2c:
         # Since we can't trust what we read from the display, we store the last
         # executed command in a property inside the object. This way strobe
         # can add the enable bit & resend it
-        if isstrobe==0: #
-            self.lastcomm=commvalue
-
-
-
+        if isstrobe == 0:
+            self.lastcomm = commvalue
 
     # put string function
     def lcd_puts(self, string, line):
@@ -248,17 +234,16 @@ class lcd2004_i2c:
     # clear lcd and set to home
     def lcd_clear(self):
         self.lcd_write(0x1)
-        sleep(0.005) # This command takes awhile.
+        sleep(0.005)  # This command takes awhile.
         self.lcd_write(0x2)
-        sleep(0.005) # This command takes awhile.
+        sleep(0.005)  # This command takes awhile.
 
     # add custom characters (0 - 7)
-    def lcd_load_custon_chars(self, fontdata):
-        self.lcd_device.bus.write(0x40);
+    def lcd_load_custom_chars(self, fontdata):
+        self.lcd_device.bus.write(0x40)
         for char in fontdata:
             for line in char:
                 self.lcd_write_char(line)
-
 
     # Necessary for Fuscus
     def copy_to_display(self, buffer):
@@ -284,7 +269,3 @@ class lcd2004_i2c:
             self.backlight_status = 1 << 7
         else:
             self.backlight_status = 0
-
-        # TODO - Implement
-        pass
-
