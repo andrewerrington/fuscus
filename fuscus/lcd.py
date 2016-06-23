@@ -57,7 +57,7 @@ class lcd:
 
     # The following functions call the actual hardware functions
     def update(self):
-        print("Copy buffer to LCD hardware")
+        # print("Copy buffer to LCD hardware")
         print(self.buffer)
         if self.hardware is not None:
             self.hardware.copy_to_display(self.buffer)
