@@ -91,6 +91,7 @@ else:
 lcd_module = config['ui'].get('lcd', 'None')
 if lcd_module == 'None' or lcd_module == '':
     lcd_module = None
+    LCD_hardware = None
     print("No LCD module specified.")
 
 elif lcd_module == 'pcd8544':
