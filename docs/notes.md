@@ -8,7 +8,7 @@ up to date.
 4. Edit **/boot/config.txt** and add **dtoverlay=w1-gpio** to support
 the 1-wire bus.
 5. Install required packages:  
-*sudo apt-get install python3 python3-pip git-core*
+*sudo apt-get install python3 python3-pip git-core python3-smbus i2c-tools*
 6. Install Python packages:  
 *sudo pip3 install spidev RPi.GPIO pyyaml* (spi is needed by the pcd8544
 LCD module)
