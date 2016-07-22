@@ -23,4 +23,4 @@ The full Fuscus installation notes are located at [notes.md](../docs/notes.md) a
 
 Once you've read through them, follow the instructions in [usage.md](usage.md)
 
-
+If you only need to update to the latest version of code, simply run [update.sh](update.sh).
