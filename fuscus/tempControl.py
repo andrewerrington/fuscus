@@ -734,7 +734,7 @@ class tempController:
 
         # To prevent lots of write cycles, don't store setting differences of less than 0.125 deg C in profile mode
         # If Raspberry Pi is connected, it will update the settings anyway. This is just a safety feature.
-        if self.cs.mode != MODES['MODE_BEER_PROFILE'] or abs(self.storedBeerSetting - newTemp) > 0.125:  #.25 -> .125
+        if self.cs.mode != MODES['MODE_BEER_PROFILE'] or self.storedBeerSetting is None or abs(self.storedBeerSetting - newTemp) > 0.125:  #.25 -> .125
             self.eepromManager.storeTempSettings()  # Alternatively, self.storeSettings()
 
 
